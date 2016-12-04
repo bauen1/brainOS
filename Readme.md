@@ -1,10 +1,11 @@
 # brainOS - a brainfuck executing os
 
+# Linux / Unix only at the moment
 Compiling:
 ```
 make all
 ```
-This generates a file "image" which can be used by a virtualmachine as raw floppy
+This generates a file "image" which can be used by a VM as raw disk / floppy
 
 If you have qemu installed:
 ```

@@ -6,6 +6,8 @@
                 jmp start ; skip data block
 cpu_halted:
                 db 10, "CPU halted!", 10, 0
+read_fail:
+                db 10, "Error loading sector", 10, 0
 start:
                 cli                             ; disable interrupts
                 mov ax, 0x07c0                  ; setup stack (idk what this does)
@@ -21,23 +23,23 @@ start:
 
                 ; dl contains the drive number we booted from
 
-                mov ah, 0x00 ; init
+                xor ah, ah        ;mov ah, 0x00 ; init
                 int 13h
 
                 ; load the next two sectors from disk right after the bootloader
                 mov ah, 0x02
-                ;mov al, 0x01 ; read 1 sector
-                mov al, 0x02 ; read 2 sectors
-                mov ch, 0x00 ; track 0
-                mov cl, 0x02 ; sector 2
-                mov dh, 0x00 ; head 0
+                mov al, 0x02                      ; read 2 sectors
+                xor ch, ch          ;mov ch, 0x00 ; track 0
+                mov cl, 0x02                      ; sector 2
+                xor dh, dh          ;mov dh, 0x00 ; head 0
                 mov bx, ds
-                mov es, bx   ; read into our current ds
+                mov es, bx                        ; read into our current ds
                 mov ebx, endofbootloader
 read_loop:
                 int 13h
-                jc read_loop ; just retry until success FIXME:
-
+                ;jc read_loop ; just retry until success FIXME:
+                jc read_error
+                
 main_done:
                 call brainfuck
 
@@ -46,7 +48,10 @@ halt:           mov si, cpu_halted
 .halt_loop:     cli                             ; disable interrupts
                 hlt                             ; halt
                 jmp .halt_loop                  ; if something managed to sneak by get right back to halting !
-
+read_error:
+                mov si, read_fail
+                call puts
+                jmp halt
 ;------------------------------------------------------------------------------;
 ;                                                                              ;
 ;------------------------------------------------------------------------------;
@@ -119,10 +124,12 @@ brainfuck:
                 je .left
                 cmp al, ']'
                 je .right
+                cmp al, "@"
+                je .exit
                 cmp al, 0x00
                 jne .bfloop
                 ; terminating 0 found, please exit now
-                xor ebx, ebx
+.exit:          xor ebx, ebx
                 mov eax, 1
                 ret
 .inc:
@@ -167,6 +174,7 @@ brainfuck:
 
 bfcode:
                 db "[-]+[[-],[.,]+]" ; Basic ECHO programm
+                ;db "[-],----------[++++++++++.,----------]++++++++++.@" ; Echo programm terminates when enter is pressed
                 db 0
 ;------------------------------------------------------------------------------;
 ; Bootloader signature must be located at offest 511 - 512                     ;

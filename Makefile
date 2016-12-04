@@ -23,3 +23,5 @@ image: boot.bin data
 	dd if=/dev/zero of=image bs=512 count=4
 	dd if=boot.bin of=image bs=512
 	dd if=data of=image bs=512 oseek=1 count=3
+# Pad the image file to 4*512 (4 sectors) + 1 byte
+	dd if=/dev/zero of=image bs=512 count=0 seek=4
