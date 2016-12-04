@@ -10,10 +10,10 @@ clean:
 
 .PHONY: test
 test: all
-	qemu-system-x86_64 -drive file=image,format=raw,if=floppy -m 2M
+	qemu-system-x86_64 -drive file=image,format=raw -m 2M
 
 debug: all
-	qemu-system-x86_64 -drive file=image,format=raw,if=floppy -m 2M -s
+	qemu-system-x86_64 -drive file=image,format=raw -m 2M -s
 
 boot.bin: boot.s
 	nasm -f bin boot.s -o boot.bin

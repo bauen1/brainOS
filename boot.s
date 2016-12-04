@@ -1,15 +1,10 @@
-; From https://gist.github.com/YouriAckx/a52010a05a430496ae11
-
-;----------------------------------------------;
-;
-;----------------------------------------------;
+;------------------------------------------------------------------------------;
+; Bootloader
+;------------------------------------------------------------------------------;
                 ;org        0x7c00               ; BIOS loads at this address
                 bits       16                   ; 16 bits real mode
-                jmp main ; skip data block
-; Print a welcome message.
-; We have no DOS nor Linux kernel here.
-; Therefore, we will use bios int 0x10.
-main:
+                jmp start ; skip data block
+start:
                 cli                             ; disable interrupts
                 mov ax, 0x07c0                  ; setup stack (idk what this does)
                 mov ds, ax                      ;
@@ -18,8 +13,8 @@ main:
                 mov es, ax                      ;
                 mov ax, 0x07e0                  ;
                 mov ss, ax                      ;
-                mov bp, ax                      ;
-                mov sp, 0xff                    ;
+                mov bp, ax                      ; base pointer
+                mov sp, 0xff                    ; stack pointer
                 sti                             ; enable interrupts
 
                 ; load the next two sectors from disk right after the bootloader
@@ -47,8 +42,13 @@ main:
 ;                jnc .done
 ;                loop read_loop
 ;.done:
+
+                mov ah, 0x00 ; init
+                int 13h
+
                 mov ah, 0x02
-                mov al, 0x01 ; read 1 sector
+                ;mov al, 0x01 ; read 1 sector
+                mov al, 0x03 ; read 3 sectors
                 mov ch, 0x00 ; track 0
                 mov cl, 0x02 ; sector 2
                 mov dh, 0x00 ; head 0
@@ -96,7 +96,10 @@ putc: ; char in al
                 pop ax
                 ret
 
+;------------------------------------------------------------------------------;
 ; from https://gist.github.com/inaz2/72de0fa471b207cb7a6b
+;------------------------------------------------------------------------------;
+
 brainfuck:
                 mov edx, mem
                 mov esi, bfcode
@@ -119,7 +122,12 @@ bfloop:
                 je left
                 cmp al, ']'
                 je right
-                jmp exit
+                cmp al, 0x00
+                jne bfloop
+                ; terminating 0 found, please exit now
+                xor ebx, ebx
+                mov eax, 1
+                ret
 .inc:
                 inc edx
                 jmp next
@@ -130,7 +138,6 @@ bfloop:
 
 plus:
                 inc byte [edx]
-                ;incbin [edx]
                 jmp next
 
 minus:
@@ -138,25 +145,11 @@ minus:
                 jmp next
 
 write:
-                ;pushad
-                ;mov ecx, edx
-                ;mov edx, 1
-                ;mov ebx, 1
-                ;mov eax, 4
-                ;int 0x80
-                ;popad
                 mov ax, [edx]
                 call putc
                 jmp next
 
 read:
-                ;pushad
-                ;mov ecx, edx
-                ;mov edx, 1
-                ;mov ebx, 0
-                ;mov eax, 3
-                ;int 0x80
-                ;popad
                 call getc
                 mov [edx], al
                 jmp next
@@ -179,15 +172,8 @@ next:
                 inc esi
                 jmp bfloop
 
-exit:
-                xor ebx, ebx
-                mov eax, 1
-                ret
 bfcode:
-
-                db "[-]>[-]>[.>]<[[-]<]" ; Print all the data until 0x00 then erase it and return to start
-                db ",[.,]" ; echo
-                db 0
+                db "[-]+[[-],[.,]+]" ; Basic ECHO programm
 
 ; brainfuck interpreter is 137 bytes long
 ;----------------------------------------------;
