@@ -4,6 +4,8 @@
                 ;org        0x7c00               ; BIOS loads at this address
                 bits       16                   ; 16 bits real mode
                 jmp start ; skip data block
+cpu_halted:
+                db 10, "CPU halted!", 10, 0
 start:
                 cli                             ; disable interrupts
                 mov ax, 0x07c0                  ; setup stack (idk what this does)
@@ -17,38 +19,15 @@ start:
                 mov sp, 0xff                    ; stack pointer
                 sti                             ; enable interrupts
 
-                ; load the next two sectors from disk right after the bootloader
                 ; dl contains the drive number we booted from
-                ;mov ah, 2
-                ;mov al, 2 ; number of sectors
-
-;                mov cx, 3 ; number of read attempts
-;read_loop:
-;                xor ah, ah ; ah = 0; reset drive
-;                int 13h
-;
-;                mov ax, ds
-;                mov es, ax
-;                mov bx, endofbootloader
-;                ;mov dl, x ; drive number
-;                mov dh, 0 ; HeadNumber
-;                mov al, 1 ; NumSector
-;                ;mov ch, CylNumHigh
-;                ;mov cl, CylNumLow ; set the high part of the cylinder number, bits 6 and 7
-;                ;and cl, Sector ; set sector number, bits 0 - 5
-;                mov cx, 0x0001 ; cylinder 0 sector 1
-;                mov ah, 2 ; func num. 2
-;                int 13h
-;                jnc .done
-;                loop read_loop
-;.done:
 
                 mov ah, 0x00 ; init
                 int 13h
 
+                ; load the next two sectors from disk right after the bootloader
                 mov ah, 0x02
                 ;mov al, 0x01 ; read 1 sector
-                mov al, 0x03 ; read 3 sectors
+                mov al, 0x02 ; read 2 sectors
                 mov ch, 0x00 ; track 0
                 mov cl, 0x02 ; sector 2
                 mov dh, 0x00 ; head 0
@@ -57,22 +36,33 @@ start:
                 mov ebx, endofbootloader
 read_loop:
                 int 13h
-                jc read_loop
+                jc read_loop ; just retry until success FIXME:
 
-
-                ;mov al, '>'
-                ;call putc
 main_done:
                 call brainfuck
-;repl:           ; read execute p l
-;                call getc
-;                or al, al                       ; special char ?
-;                jz repl
-;                call putc
-;                jmp repl
 
-halt:           hlt                             ; halt
+halt:           mov si, cpu_halted
+                call puts
+.halt_loop:     cli                             ; disable interrupts
+                hlt                             ; halt
+                jmp .halt_loop                  ; if something managed to sneak by get right back to halting !
 
+;------------------------------------------------------------------------------;
+;                                                                              ;
+;------------------------------------------------------------------------------;
+puts:
+                push ax
+.loop:
+                lodsb                           ; load byte at SI into al incrementing SI
+                cmp al, 0x00
+                je .done
+                call putc
+                jmp .loop
+.done:          pop ax
+                ret
+;------------------------------------------------------------------------------;
+;                                                                              ;
+;------------------------------------------------------------------------------;
 getc: ; returns pressed key in al, keycode in ah
                 xor ah, ah                      ; ah = 0
                 int 16h
@@ -83,6 +73,10 @@ getc: ; returns pressed key in al, keycode in ah
                 or al, al                       ; special char ?
                 jz getc                         ; just get the next one :D
                 ret
+
+;------------------------------------------------------------------------------;
+;                                                                              ;
+;------------------------------------------------------------------------------;
 putc: ; char in al
                 push ax ; +44
                 mov ah, 0x0E ; print char
@@ -103,86 +97,83 @@ putc: ; char in al
 brainfuck:
                 mov edx, mem
                 mov esi, bfcode
+                jmp .bfloop
 
-bfloop:
+.next:
+                inc esi
+.bfloop:
                 mov al, [esi]
                 cmp al, '>'
                 je .inc
                 cmp al, '<'
                 je .dec
                 cmp al, '+'
-                je plus
+                je .plus
                 cmp al, '-'
-                je minus
+                je .minus
                 cmp al, '.'
-                je write
+                je .write
                 cmp al, ','
-                je read
+                je .read
                 cmp al, '['
-                je left
+                je .left
                 cmp al, ']'
-                je right
+                je .right
                 cmp al, 0x00
-                jne bfloop
+                jne .bfloop
                 ; terminating 0 found, please exit now
                 xor ebx, ebx
                 mov eax, 1
                 ret
 .inc:
                 inc edx
-                jmp next
+                jmp .next
 
 .dec:
                 dec edx
-                jmp next
+                jmp .next
 
-plus:
+.plus:
                 inc byte [edx]
-                jmp next
+                jmp .next
 
-minus:
+.minus:
                 dec byte [edx]
-                jmp next
+                jmp .next
 
-write:
+.write:
                 mov ax, [edx]
                 call putc
-                jmp next
+                jmp .next
 
-read:
+.read:
                 call getc
                 mov [edx], al
-                jmp next
+                jmp .next
 
-left:
+.left:
                 push esi
-                jmp next
+                jmp .next
 
-right:
+.right:
                 mov al, [edx]
                 test al, al
-                jz rightexit
+                jz .rightexit
                 mov esi, [esp]
-                jmp next
-rightexit:
+                jmp .next
+.rightexit:
                 pop eax
-                jmp next
-
-next:
-                inc esi
-                jmp bfloop
+                jmp .next
 
 bfcode:
                 db "[-]+[[-],[.,]+]" ; Basic ECHO programm
-
-; brainfuck interpreter is 137 bytes long
-;----------------------------------------------;
-; Bootloader signature must be located
-; at bytes #511 and #512.
-; Fill with 0 in between.
-; $  = address of the current line
-; $$ = address of the 1st instruction
-;----------------------------------------------;
+                db 0
+;------------------------------------------------------------------------------;
+; Bootloader signature must be located at offest 511 - 512                     ;
+; Fill the remaining space with 0x00                                           ;
+; $  = address of the current byte                                             ;
+; $$ = address of the first byte                                               ;
+;------------------------------------------------------------------------------;
                 times 510 - ($-$$) db 0
 mem:
                 dw        0xaa55
