@@ -1,7 +1,7 @@
 ;------------------------------------------------------------------------------;
 ; Bootloader
 ;------------------------------------------------------------------------------;
-                ;org        0x7c00               ; BIOS loads at this address
+                org        0x00007c00               ; BIOS loads at this address
                 bits       16                   ; 16 bits real mode
                 jmp start ; skip data block
 cpu_halted:
@@ -10,15 +10,17 @@ read_fail:
                 db 10, "Error loading sector", 10, 0
 start:
                 cli                             ; disable interrupts
-                mov ax, 0x07c0                  ; setup stack (idk what this does)
-                mov ds, ax                      ;
-                mov gs, ax                      ;
-                mov fs, ax                      ;
-                mov es, ax                      ;
-                mov ax, 0x07e0                  ;
-                mov ss, ax                      ;
-                mov bp, ax                      ; base pointer
-                mov sp, 0xff                    ; stack pointer
+
+                xor ax, ax                      ; setup all the following segments to 0000:xxxx
+                mov ds, ax                      ; data segment
+                mov es, ax                      ; extra segment
+                mov fs, ax                      ; 2nd extra segment
+                mov gs, ax                      ; 3rd extra segment
+
+                mov bp, 0x5000                  ; stack grows down
+                mov ss, ax                      ; from  0x7c00
+                mov sp, 0x7c00                  ; to    0x5000
+
                 sti                             ; enable interrupts
 
                 ; dl contains the drive number we booted from
@@ -28,10 +30,10 @@ start:
 
                 ; load the next two sectors from disk right after the bootloader
                 mov ah, 0x02
-                mov al, 0x02                      ; read 2 sectors
-                xor ch, ch          ;mov ch, 0x00 ; track 0
+                mov al, 0x03                      ; read 3 sectors
+                xor ch, ch                        ; track 0
                 mov cl, 0x02                      ; sector 2
-                xor dh, dh          ;mov dh, 0x00 ; head 0
+                xor dh, dh                        ; head 0
                 mov bx, ds
                 mov es, bx                        ; read into our current ds
                 mov ebx, endofbootloader
@@ -39,7 +41,7 @@ read_loop:
                 int 13h
                 ;jc read_loop ; just retry until success FIXME:
                 jc read_error
-                
+
 main_done:
                 call brainfuck
 
@@ -53,7 +55,7 @@ read_error:
                 call puts
                 jmp halt
 ;------------------------------------------------------------------------------;
-;                                                                              ;
+; puts:                                                                        ;
 ;------------------------------------------------------------------------------;
 puts:
                 push ax
@@ -66,7 +68,7 @@ puts:
 .done:          pop ax
                 ret
 ;------------------------------------------------------------------------------;
-;                                                                              ;
+; getc:                                                                        ;
 ;------------------------------------------------------------------------------;
 getc: ; returns pressed key in al, keycode in ah
                 xor ah, ah                      ; ah = 0
@@ -80,7 +82,7 @@ getc: ; returns pressed key in al, keycode in ah
                 ret
 
 ;------------------------------------------------------------------------------;
-;                                                                              ;
+; putc:                                                                        ;
 ;------------------------------------------------------------------------------;
 putc: ; char in al
                 push ax ; +44
@@ -96,9 +98,9 @@ putc: ; char in al
                 ret
 
 ;------------------------------------------------------------------------------;
-; from https://gist.github.com/inaz2/72de0fa471b207cb7a6b
+; brainfuck:                                                                   ;
+; from https://gist.github.com/inaz2/72de0fa471b207cb7a6b                      ;
 ;------------------------------------------------------------------------------;
-
 brainfuck:
                 mov edx, mem
                 mov esi, bfcode
