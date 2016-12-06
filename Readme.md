@@ -5,7 +5,7 @@ Compiling:
 ```
 make all
 ```
-This generates a file "image" which can be used by a VM as raw disk / floppy
+This generates a file "image" which can be used by a VM as raw disk
 
 If you have qemu installed:
 ```

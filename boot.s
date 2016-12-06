@@ -25,7 +25,7 @@ start:
 
                 ; dl contains the drive number we booted from
 
-                xor ah, ah        ;mov ah, 0x00 ; init
+                xor ah, ah                        ; init drive
                 int 13h
 
                 ; load the next two sectors from disk right after the bootloader
@@ -36,11 +36,10 @@ start:
                 xor dh, dh                        ; head 0
                 mov bx, ds
                 mov es, bx                        ; read into our current ds
-                mov ebx, endofbootloader
+                mov ebx, endofbootloader          ; at the end of our current bootloader
 read_loop:
                 int 13h
-                ;jc read_loop ; just retry until success FIXME:
-                jc read_error
+                jc read_error                     ; just retry until success FIXME:
 
 main_done:
                 call brainfuck
@@ -85,15 +84,18 @@ getc: ; returns pressed key in al, keycode in ah
 ; putc:                                                                        ;
 ;------------------------------------------------------------------------------;
 putc: ; char in al
-                push ax ; +44
-                mov ah, 0x0E ; print char
-                cmp al, 0x0A ; \n
+                push ax
+                push bx
+                xor bx, bx
+                mov ah, 0x0E                    ; print char
+                cmp al, 0x0A                    ; \n
                 jne .done
                 mov al, 0x0D
-                int 0x10
+                int 0x10                        ;
                 mov al, 0x0A
 .done:
-                int 0x10
+                int 0x10                        ;
+                pop bx
                 pop ax
                 ret
 
@@ -162,6 +164,33 @@ brainfuck:
 
 .left:
                 push esi
+                ; TODO: My Loop skips skips a beat (skip loop if cell == 0)
+                mov al, [edx]
+                test al, al
+                jnz .next ; cell != 0
+
+                push ebx
+                mov ebx, 0x0001
+
+.nextsearch:    inc esi
+.searchloop:
+                mov al, [esi]
+                cmp al, '['
+                je .searchopen
+                cmp al, ']'
+                je .searchclose
+                cmp al, 0x00 ; FIXME: maybe we should remove this
+                je .exit
+                jmp .nextsearch
+.searchopen:
+                inc ebx
+                je .searchfinish ; "stack" underflow
+                jmp .nextsearch
+.searchclose:
+                dec ebx
+                jne .nextsearch
+                ; fall through
+.searchfinish:  pop ebx
                 jmp .next
 
 .right:
@@ -175,6 +204,7 @@ brainfuck:
                 jmp .next
 
 bfcode:
+                ;db "[-]>[-]<[>[-]++++++++++<[-]]>.[-]<" ; test for loop skiping, prints a newline if loops aren't skipped if the current cell is 0
                 db "[-]+[[-],[.,]+]" ; Basic ECHO programm
                 ;db "[-],----------[++++++++++.,----------]++++++++++.@" ; Echo programm terminates when enter is pressed
                 db 0
