@@ -107,6 +107,20 @@ putc: ; char in al
                 ret
 
 ;------------------------------------------------------------------------------;
+; Bootloader signature must be located at offest 511 - 512                     ;
+; Fill the remaining space with 0x00                                           ;
+; $  = address of the current byte                                             ;
+; $$ = address of the first byte                                               ;
+;------------------------------------------------------------------------------;
+                times 510 - ($-$$) db 0
+magic:
+                dw        0xaa55
+endofbootloader:
+;------------------------------------------------------------------------------;
+; END OF BOOTLOADER
+;------------------------------------------------------------------------------;
+
+;------------------------------------------------------------------------------;
 ; brainfuck:                                                                   ;
 ; from https://gist.github.com/inaz2/72de0fa471b207cb7a6b                      ;
 ;------------------------------------------------------------------------------;
@@ -216,13 +230,4 @@ bfcode:
                 ;db "[-],----------[++++++++++.,----------]++++++++++.@" ; Echo programm terminates when enter is pressed
                 db ",[.,]"
                 db 0
-;------------------------------------------------------------------------------;
-; Bootloader signature must be located at offest 511 - 512                     ;
-; Fill the remaining space with 0x00                                           ;
-; $  = address of the current byte                                             ;
-; $$ = address of the first byte                                               ;
-;------------------------------------------------------------------------------;
-                times 510 - ($-$$) db 0
 mem:
-                dw        0xaa55
-endofbootloader:
