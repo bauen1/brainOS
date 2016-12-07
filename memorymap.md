@@ -7,6 +7,9 @@
 | 0x003000 | 0x00007BFF | 19kb      | Free Memory    |
 | 0x007C00 | 0x00007DFF | 512 bytes | bootloader     |
 | 0x007E00 | 0x0007FFFF | ~480.5 kb | Free Memory    |
+| 0x080000 | 0x0009FBFF | ~120 kb   | Free if exists |
+| 0x09FC00 | 0x0009FFFF | 1 kb      | EBDA
+| 0x0A0000 | 0x000FFFFF | 384 kb    | 
 
 
 Memory access:

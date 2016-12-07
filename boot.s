@@ -5,12 +5,10 @@
                 bits       16                   ; 16 bits real mode
                 jmp start ; skip data block
 cpu_halted:
-                db 10, "CPU halted!", 10, 0
+                db "CPU halted!", 10, 0
 read_fail:
-                db 10, "Error loading sector", 10, 0
+                db "Error loading sector", 10, 0
 start:
-                cli                             ; disable interrupts
-
                 xor ax, ax                      ; setup all the following segments to 0000:xxxx
                 mov ds, ax                      ; data segment
                 mov es, ax                      ; extra segment
@@ -18,6 +16,9 @@ start:
                 mov gs, ax                      ; 3rd extra segment
 
                 mov bp, 0x5000                  ; stack grows down
+
+                cli                             ; disable interrupts
+
                 mov ss, ax                      ; from  0x7c00
                 mov sp, 0x7c00                  ; to    0x5000
 
@@ -25,8 +26,7 @@ start:
 
                 ; dl contains the drive number we booted from
 
-                xor ah, ah                        ; init drive
-                int 13h
+                call reset_drive
 
                 ; load the next two sectors from disk right after the bootloader
                 mov ah, 0x02
@@ -50,9 +50,16 @@ halt:           mov si, cpu_halted
                 hlt                             ; halt
                 jmp .halt_loop                  ; if something managed to sneak by get right back to halting !
 read_error:
+                call reset_drive
                 mov si, read_fail
                 call puts
                 jmp halt
+
+reset_drive:
+                xor ah, ah                        ; init drive
+                int 13h
+                ret
+
 ;------------------------------------------------------------------------------;
 ; puts:                                                                        ;
 ;------------------------------------------------------------------------------;
@@ -205,8 +212,9 @@ brainfuck:
 
 bfcode:
                 ;db "[-]>[-]<[>[-]++++++++++<[-]]>.[-]<" ; test for loop skiping, prints a newline if loops aren't skipped if the current cell is 0
-                db "[-]+[[-],[.,]+]" ; Basic ECHO programm
+                ;db "[-]+[[-],[.,]+]" ; Basic ECHO programm
                 ;db "[-],----------[++++++++++.,----------]++++++++++.@" ; Echo programm terminates when enter is pressed
+                db ",[.,]"
                 db 0
 ;------------------------------------------------------------------------------;
 ; Bootloader signature must be located at offest 511 - 512                     ;
