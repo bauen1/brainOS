@@ -7,7 +7,7 @@ TOOLS=$(PREFIX)/bin/$(TARGET)
 cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 ld=$(TOOLS)-ld
-cflags=-nostdlib -std=gnu99 -O2
+cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
 cpreflags=-Wall -Wextra
 asm=nasm
 asmflags=-w+orphan-labels
