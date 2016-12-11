@@ -1,14 +1,13 @@
 # brainOS - a brainfuck executing os
 
-# Linux / Unix only at the moment
-Compiling:
-```
-make all
-```
-This generates a file "image" which can be used by a VM as raw disk
+# Dependencies
+* [Cross-compiling GCC](http://wiki.osdev.org/GCC_Cross-Compiler)
+* [grub-mkrescue (linux has it preinstalled this is for macOS users)](http://wiki.osdev.org/GRUB_2#Installing_GRUB2_on_Mac_OS_X)
 
-If you have qemu installed:
+# Compiling
+
+### Linux / Unix / macOS only at the moment
+Running:
 ```
-make test
+make qemu
 ```
-Will launch a qemu machine with BrainOS

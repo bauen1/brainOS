@@ -1,4 +1,5 @@
 
-image
+*.o
+iso/*
 
-*.bin
+image.iso
