@@ -42,8 +42,6 @@ start:
                   jmp halt
 .end:
 
-debug:            mov al, '#'
-                  jmp panic
 
 check_cpuid:      pushfd                          ; http://wiki.osdev.org/Setting_Up_Long_Mode#Detection_of_CPUID
                   pop eax

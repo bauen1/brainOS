@@ -38,11 +38,12 @@ $(iso): kernel/kernel.bin
 	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
 	$(grub-mkrescue) -o $(iso) $(isodir)
 
-kernel/kernel.bin: kernel/boot.o kernel/linker.ld kernel/kmain.o
-	$(cc) $(cflags) -T kernel/linker.ld -ffreestanding -O2 -o kernel/kernel.bin -lgcc kernel/boot.o kernel/kmain.o
+kernel/kernel.bin: kernel/linker.ld kernel/boot.o kernel/kmain.c kernel/*.c
+	$(cc) $(cflags) $(cpreflags) -o $@ -T $^
+	#grub-file --is-x86-multiboot kernel/kernel.bin
 
-kernel/*.o: kernel/*.c
-	$(cc) $(cflags) $(cpreflags) -o $@ -c $<
+#kernel/kernel.o: kernel/*.c kernel/*.h
+#	$(cc) $(cflags) $(cpreflags) -o $@ -c $<
 
 kernel/boot.o: kernel/boot.s
 	$(asm) $(asmflags) -felf -o $@ $<
