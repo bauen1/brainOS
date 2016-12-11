@@ -1,4 +1,4 @@
-# brainOS - a brainfuck executing os
+# brainOS
 
 # Dependencies
 * [Cross-compiling GCC](http://wiki.osdev.org/GCC_Cross-Compiler)

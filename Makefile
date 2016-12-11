@@ -2,24 +2,19 @@
 #HOME=$HOME
 PREFIX=$(HOME)/opt/cross
 TARGET=i686-elf
-
 TOOLS=$(PREFIX)/bin/$(TARGET)
-CC=$(TOOLS)-gcc
-C++=$(TOOLS)-g++
-CFLAGS=-nostdlib
-NASM=nasm
-NASMFLAGS=-w+orphan-labels
-GRUB-MKRESCUE=$(PREFIX)/bin/grub-mkrescue
 
-ISODIR=./iso
-ISOFILE=image.iso
+cc=$(TOOLS)-gcc
+c++=$(TOOLS)-g++
+ld=$(TOOLS)-ld
+cflags=-nostdlib -std=gnu99 -O2
+cpreflags=-Wall -Wextra
+asm=nasm
+asmflags=-w+orphan-labels
+grub-mkrescue=$(PREFIX)/bin/grub-mkrescue
 
-
-
-
-# QEMU specific
-
-MEMORY=256M
+isodir=./iso
+iso=image.iso
 
 .DEFAULT: all
 .PHONY: all
@@ -27,23 +22,27 @@ all: image
 
 .PHONY: clean
 clean:
-	@echo "Cleaning..."
+	rm -rf $(iso)
+	rm -rf *.o
+	rm -rf *.bin
 
 .PHONY: qemu
-qemu: iso
-	qemu-system-x86_64 -drive file=$(ISOFILE),format=raw -m $(MEMORY) -s
+qemu: $(iso)
+	qemu-system-x86_64 -drive file=$(iso),format=raw -m 256M -s
 
-iso: kernel/kernel.bin
-	mkdir -p $(ISODIR)/boot/grub
-	cp grub.cfg $(ISODIR)/boot/grub/grub.cfg
-	cp kernel/kernel.bin $(ISODIR)/boot/grub/kernel.bin
-	$(grub-mkrescue) -o $(ISOFILE) $(ISODIR)
+iso: $(iso)
+
+$(iso): kernel/kernel.bin
+	mkdir -p $(isodir)/boot/grub
+	cp grub.cfg $(isodir)/boot/grub/grub.cfg
+	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
+	$(grub-mkrescue) -o $(iso) $(isodir)
 
 kernel/kernel.bin: kernel/boot.o kernel/linker.ld kernel/kmain.o
-	$(CC) $(CFLAGS) -T kernel/linker.ld -ffreestanding -O2 -o kernel/kernel.bin kernel/boot.o kernel/kmain.o -lgcc
+	$(cc) $(cflags) -T kernel/linker.ld -ffreestanding -O2 -o kernel/kernel.bin -lgcc kernel/boot.o kernel/kmain.o
 
-kernel/kmain.o: kernel/kmain.c kernel/kmain.h
-	$(CC) $(CFLAGS) -c kernel/kmain.c -o kernel/kmain.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+kernel/*.o: kernel/*.c
+	$(cc) $(cflags) $(cpreflags) -o $@ -c $<
 
-kernel/boot.o:	kernel/boot.s
-	$(NASM) $(NASMFLAGS) -felf kernel/boot.s -o kernel/boot.o
+kernel/boot.o: kernel/boot.s
+	$(asm) $(asmflags) -felf -o $@ $<

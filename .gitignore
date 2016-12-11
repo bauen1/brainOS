@@ -3,3 +3,5 @@
 iso/*
 
 image.iso
+*.bin
+*/*.bin
