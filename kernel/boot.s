@@ -42,7 +42,6 @@ start:
                   jmp halt
 .end:
 
-
 check_cpuid:      pushfd                          ; http://wiki.osdev.org/Setting_Up_Long_Mode#Detection_of_CPUID
                   pop eax
                   mov ecx, eax
@@ -81,11 +80,25 @@ panic:            mov dword [0xb8000], 0x4f524f45 ; 'ER'
                   mov dword [0xb8004], 0x4f3a4f52 ; 'R:'
                   mov dword [0xb8008], 0x4f204f20 ; ' '
                   mov byte  [0xb800a], al
-                  ; fall through
+                  jmp halt
+
+global gdt_flush
+extern gp
+gdt_flush:        lgdt [gp]
+                  mov ax, 0x10
+                  mov ds, ax
+                  mov es, ax
+                  mov fs, ax
+                  mov gs, ax
+                  mov ss, ax
+                  jmp 0x08:.flush2
+.flush2:          ret
+
 global halt
 halt:             cli
 .hang:            hlt
                   jmp .hang
+
 
 section .bss
 stack_bottom:

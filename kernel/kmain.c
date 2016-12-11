@@ -7,28 +7,18 @@
 
 #include "system.h"
 #include "tty.h"
+#include "gdt.h"
 
 extern void halt();
 
 void kmain () {
   tty_init();
-  tty_putc('H');
-  tty_putc('E');
-  tty_putc('L');
-  tty_putc('L');
-  tty_putc('O');
-  tty_putc(' ');
-  tty_putc('W');
-  tty_putc('O');
-  tty_putc('R');
-  tty_putc('L');
-  tty_putc('D');
-  tty_putc('!');
-  tty_putc('\n');
-  
-  gdt_install();
+  puts("Hello World !\n :D \n");
 
-  tty_putc('!');
-  tty_putc('\n');
+  gdt_init();
+
+  puts("GDT up and running !\n");
+  puts("Free Cake for everyone!\n");
+
   halt();
 }

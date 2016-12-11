@@ -1,11 +1,14 @@
 #include "system.h"
 #include "tty.h"
 
-unsigned char *memcpy(unsigned char *dest, const unsigned char *src, int count) {
-  while(count--) {
-    dest[count] = src[count];
+void *memcpy(void *dest, void *src, int count) {
+  char* d = dest;
+  char* s = src;
+  for (int i = 0; i < count; i ++) {
+    d[i] = s[i];
   }
-  return (unsigned char *)dest;
+
+  return dest;
 }
 
 unsigned char *memset(unsigned char *dest, unsigned char val, int count) {
@@ -22,7 +25,7 @@ unsigned char *memsetw(unsigned short *dest, unsigned short val, int count) {
   return (unsigned char *)dest;
 }
 
-int strlen(const char *str) {
+int strlen(char *str) {
   int i;
   for (i = 0; str[i] != '\0'; i++) {}
   return i;
@@ -38,6 +41,12 @@ void outportb (unsigned short port, unsigned char data) {
   __asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));
 }
 
-void putc (unsigned char c) {
+void putc (char c) {
   tty_putc(c);
+}
+
+void puts (char *str) {
+  for (int i = 0; i < strlen(str); i++) {
+    putc(str[i]);
+  }
 }

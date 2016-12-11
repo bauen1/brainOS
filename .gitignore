@@ -5,3 +5,5 @@ iso/*
 image.iso
 *.bin
 */*.bin
+
+kernel/kernel.bin

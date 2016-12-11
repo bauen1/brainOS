@@ -18,15 +18,8 @@ void tty_init() {
   blank = get_vga_v(' ', attribute);
 
   for (int i = 0; i < VGA_HEIGHT; i++) {
-    memsetw(video_memory + i * VGA_WIDTH, blank, VGA_WIDTH);
+    memsetw((short unsigned int*)video_memory + i * VGA_WIDTH, blank, VGA_WIDTH);
   }
-
-  //video_memory[0] = '!' | (attribute << 8);
-  //put_v_at(':', attribute, 0, 0);
-  //put_v_at('D', attribute, 1, 0);
-  tty_putc(':');
-  tty_putc('D');
-  tty_putc('\n');
 }
 
 void move_csr() {
@@ -43,7 +36,7 @@ void scroll() {
     tmp = y - VGA_HEIGHT + 1;
     memcpy(video_memory, video_memory + tmp * VGA_WIDTH, (VGA_HEIGHT - tmp) * VGA_HEIGHT * 2);
 
-    memsetw(video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH, blank, VGA_WIDTH);
+    memsetw((short unsigned int*)video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH, blank, VGA_WIDTH);
     y = VGA_HEIGHT - 1;
   }
 }
