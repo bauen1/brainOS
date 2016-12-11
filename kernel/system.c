@@ -1,28 +1,32 @@
 #include "system.h"
 #include "tty.h"
 
-void *memcpy(void *dest, void *src, int count) {
-  char* d = dest;
-  char* s = src;
-  for (int i = 0; i < count; i ++) {
+void *memcpy(void *destination, const void *source, size_t num) {
+  char* d = destination;
+  char* s = (void*)source;
+  for (size_t i = 0; i < num; i++) {
     d[i] = s[i];
   }
 
-  return dest;
+  return destination;
 }
 
-unsigned char *memset(unsigned char *dest, unsigned char val, int count) {
-  while(count--) {
-    dest[count] = val;
+void *memset(void *destination, int c, size_t num) {
+  char* d = destination;
+  for (size_t i = 0; i < num; i++) {
+    d[i] = c;
   }
-  return (unsigned char *)dest;
+
+  return destination;
 }
 
-unsigned char *memsetw(unsigned short *dest, unsigned short val, int count) {
-  while(count--) {
-    dest[count] = val;
+unsigned short *memsetw(unsigned short *destination, unsigned short v, size_t num) {
+  unsigned short* d = destination;
+  for (size_t i = 0; i < num; i++) {
+    d[i] = v;
   }
-  return (unsigned char *)dest;
+
+  return destination;
 }
 
 int strlen(char *str) {

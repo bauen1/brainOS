@@ -1,11 +1,12 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#include <stddef.h>
 #include <stdint.h>
 
-void *memcpy(void *dest, void *src, int count);
-unsigned char *memset(unsigned char *dest, unsigned char val, int count);
-unsigned char *memsetw(unsigned short *dest, unsigned short val, int count);
+void *memcpy(void *destination, const void *source, size_t num);
+void *memset(void *destination, int c, size_t num);
+unsigned short *memsetw(unsigned short *destination, unsigned short v, size_t num);
 int strlen(char *str);
 
 unsigned char inportb (unsigned short port);
