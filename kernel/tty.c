@@ -44,6 +44,7 @@ void scroll() {
     memcpy(video_memory, video_memory + tmp * VGA_WIDTH, (VGA_HEIGHT - tmp) * VGA_HEIGHT * 2);
 
     memsetw(video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH, blank, VGA_WIDTH);
+    y = VGA_HEIGHT - 1;
   }
 }
 
