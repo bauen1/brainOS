@@ -50,4 +50,3 @@ stack_bottom:
 stack_top:
 
 section .text
-%include "kernel/arch/i686/gdt.s"
