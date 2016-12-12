@@ -7,3 +7,6 @@ image.iso
 */*.bin
 
 kernel/kernel.bin
+
+toolchain/build/*
+toolchain/opt/*

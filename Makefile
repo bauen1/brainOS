@@ -44,3 +44,6 @@ kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/boot.o kernel/kmain.c 
 
 kernel/boot.o: kernel/arch/$(TARGET)/boot.s
 	$(asm) $(asmflags) -felf -o $@ $<
+
+toolchain: toolchain/build.sh
+	@cd toolchain ; ./build.sh
