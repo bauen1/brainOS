@@ -6,8 +6,13 @@
 
 # Compiling
 
-### Linux / Unix / macOS only at the moment
-Running:
+## Compile the Toolchain
+* Compile it:
+  ```
+  make toolchain
+  ```
+* Install grub2-mkresuce yourself until i figure out how i installed it, take a look at `toolchain/build.sh`
+## Running in Qemu
 ```
 make qemu
 ```
