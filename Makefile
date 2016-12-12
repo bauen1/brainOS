@@ -1,5 +1,7 @@
 # Makefile
 #HOME=$HOME
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+HOME=ROOT_DIR/toolchain
 PREFIX=$(HOME)/opt/cross
 TARGET ?=i686
 TOOLS=$(PREFIX)/bin/$(TARGET)-elf
@@ -8,7 +10,7 @@ cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 ld=$(TOOLS)-ld
 asm=nasm
-grub-mkrescue=$(PREFIX)/bin/grub-mkrescue
+grub-mkrescue=$(HOME)/opt/cross/bin/grub-mkrescue #fixme
 
 cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
 cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
@@ -24,8 +26,8 @@ all: image
 .PHONY: clean
 clean:
 	rm -rf $(iso)
-	rm -rf *.o
-	rm -rf *.bin
+	rm -rf */*.o *.o
+	rm -rf */*.bin *.bin
 
 .PHONY: qemu
 qemu: $(iso)
