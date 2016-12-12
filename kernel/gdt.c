@@ -1,5 +1,7 @@
 #include "gdt.h"
 
+// from http://www.osdever.net/bkerndev/Docs/gdt.htm
+
 /* Setup a descriptor in the Global Descriptor Table */
 void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
 {

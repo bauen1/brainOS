@@ -1,17 +1,18 @@
 # Makefile
 #HOME=$HOME
 PREFIX=$(HOME)/opt/cross
-TARGET=i686-elf
-TOOLS=$(PREFIX)/bin/$(TARGET)
+TARGET ?=i686
+TOOLS=$(PREFIX)/bin/$(TARGET)-elf
 
 cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 ld=$(TOOLS)-ld
-cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
-cpreflags=-Wall -Wextra
 asm=nasm
-asmflags=-w+orphan-labels
 grub-mkrescue=$(PREFIX)/bin/grub-mkrescue
+
+cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
+cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
+asmflags=-w+orphan-labels
 
 isodir=./iso
 iso=image.iso
@@ -38,12 +39,8 @@ $(iso): kernel/kernel.bin
 	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
 	$(grub-mkrescue) -o $(iso) $(isodir)
 
-kernel/kernel.bin: kernel/linker.ld kernel/boot.o kernel/kmain.c kernel/*.c kernel/*.h
-	$(cc) $(cflags) $(cpreflags) -o $@ -T $^
-	#grub-file --is-x86-multiboot kernel/kernel.bin
+kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/boot.o kernel/kmain.c kernel/*.c | kernel/*.h
+	$(cc) $(cflags) -o $@ -T $^
 
-#kernel/kernel.o: kernel/*.c kernel/*.h
-#	$(cc) $(cflags) $(cpreflags) -o $@ -c $<
-
-kernel/boot.o: kernel/boot.s
+kernel/boot.o: kernel/arch/$(TARGET)/boot.s
 	$(asm) $(asmflags) -felf -o $@ $<

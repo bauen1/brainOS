@@ -17,8 +17,7 @@ void kmain () {
 
   gdt_init();
 
-  puts("GDT up and running !\n");
-  puts("Free Cake for everyone!\n");
+  puts("Nothing has blown up yet \\o/\n");
 
   halt();
 }
