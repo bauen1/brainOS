@@ -1,16 +1,17 @@
 # Makefile
 #HOME=$HOME
-ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-HOME=ROOT_DIR/toolchain
+ROOT_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+HOME=$(ROOT_DIR)/toolchain
 PREFIX=$(HOME)/opt/cross
 TARGET ?=i686
+ARCH = $(TARGET)
 TOOLS=$(PREFIX)/bin/$(TARGET)-elf
 
 cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 ld=$(TOOLS)-ld
 asm=nasm
-grub-mkrescue=$(HOME)/opt/cross/bin/grub-mkrescue #fixme
+grub-mkrescue=/Users/jh/opt/cross/bin/grub-mkrescue #fixme
 
 cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
 cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
@@ -41,11 +42,14 @@ $(iso): kernel/kernel.bin
 	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
 	$(grub-mkrescue) -o $(iso) $(isodir)
 
-kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/boot.o kernel/kmain.c kernel/*.c | kernel/*.h
+kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h
 	$(cc) $(cflags) -o $@ -T $^
 
-kernel/boot.o: kernel/arch/$(TARGET)/boot.s
-	$(asm) $(asmflags) -felf -o $@ $<
+kernel/%.o: kernel/%.c
+	$(cc) $(cflags) -c $< -o $@
+
+kernel/%.o: kernel/%.s
+	$(asm) $(asmflags) -felf $< -o $@
 
 toolchain: toolchain/build.sh
 	@cd toolchain ; ./build.sh
