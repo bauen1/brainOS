@@ -6,6 +6,8 @@ MB_MEMORY_INFO	equ 1<<1 ; request mem_info struct
 MB_HEADER_FLAGS equ MB_PAGE_ALIGN | MB_MEMORY_INFO
 MB_CHECKSUM equ -(MB_HEADER_MAGIC + MB_HEADER_FLAGS)
 
+STACK_SIZE equ 16384 ; 16kb (gotta think big)
+
 bits 32
 
 global mboot
@@ -32,7 +34,9 @@ start:
                   cmp eax, MB_EAX_MAGIC
                   jne .no_multiboot
 
-                  mov esp, stack
+                  mov esp, stack                  ; setup stack
+
+                  push STACK_SIZE
                   push esp                        ; save it for the kernel because lazy
                   push ebx                        ; multiboot header
 
@@ -49,7 +53,11 @@ start:
 .end:
 
 
+%include "kernel/arch/i686/gdt-flush.s"
+%include "kernel/arch/i686/idt.s"
+%include "kernel/arch/i686/isrs.s"
+
 section .bss
 align 16
-  resb 16384 ; 16kb (gotta think big)
+  resb STACK_SIZE
 stack:

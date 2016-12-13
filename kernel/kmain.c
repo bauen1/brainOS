@@ -10,12 +10,13 @@
 #include "tty.h"
 #include "gdt.h"
 
-int kmain (multiboot_t *multiboot_info, uintptr_t esp) {
+int kmain (multiboot_t *multiboot_info, uintptr_t esp, uint32_t stack_size) {
   tty_init();
+  puts("brainOS v0.1\n");
+  puts("boot information\n");
   puthex("stack size: ", stack_size);
   puthex("esp:        ", esp);
 
-  puts("Hello World !\n :D \n");
   puts("multiboot_info flags:");
   char buffer[1024];
   itoa(multiboot_info->flags, &buffer[0], 2);
