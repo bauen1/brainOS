@@ -42,7 +42,7 @@ $(iso): kernel/kernel.bin
 	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
 	$(grub-mkrescue) -o $(iso) $(isodir)
 
-kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h
+kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h kernel/arch/$(TARGET)/*
 	$(cc) $(cflags) -o $@ -T $^
 
 kernel/%.o: kernel/%.c

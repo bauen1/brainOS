@@ -8,23 +8,24 @@
 #include "multiboot.h"
 #include "system.h"
 #include "tty.h"
-//#include "gdt.h"
-
-extern void halt();
+#include "gdt.h"
 
 int kmain (multiboot_t *multiboot_info, uintptr_t esp) {
   tty_init();
+  puthex("stack size: ", stack_size);
+  puthex("esp:        ", esp);
+
   puts("Hello World !\n :D \n");
+  puts("multiboot_info flags:");
   char buffer[1024];
   itoa(multiboot_info->flags, &buffer[0], 2);
   puts(&buffer[0]);
   putc('\n');
-  for (int i = 0; i < 33; i++) {
-    putc(&multiboot_info+i);
-  }
-  putc('\n');
 
-  //gdt_init();
+  puts("pre gdt_init();\n");
+  gdt_init();
+  puts("post gdt_init();\n");
+
 
   puts("Nothing has blown up yet \\o/\n");
 

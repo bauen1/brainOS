@@ -93,3 +93,25 @@ char * itoa( int value, char * str, int base )
     }
     return rc;
 }
+
+static char get_hex_low(uint8_t v) {
+  return "0123456789abcdef"[v & 0x0f];
+}
+
+static char get_hex_high(uint8_t v) {
+  return "0123456789abcdef"[(v >> 4) & 0x0f];
+}
+
+void puthex(const char * name, uint32_t v) {
+  puts(name);
+  puts("0x");
+  putc(get_hex_high(v >> 24));
+  putc(get_hex_low(v  >> 24));
+  putc(get_hex_high(v >> 16));
+  putc(get_hex_low(v  >> 16));
+  putc(get_hex_high(v >> 8));
+  putc(get_hex_low(v  >> 8));
+  putc(get_hex_high(v >> 0));
+  putc(get_hex_low(v  >> 0));
+  putc('\n');
+}
