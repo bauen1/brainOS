@@ -36,13 +36,13 @@ start:
 
                   mov esp, stack                  ; setup stack
 
-                  push STACK_SIZE
                   push esp                        ; save it for the kernel because lazy
+                  push STACK_SIZE
                   push ebx                        ; multiboot header
 
                   cmp eax, MB_EAX_MAGIC           ; magic is in the air
 
-                  call kmain                      ; int kmain (multiboot_t *multiboot_info, uintptr_t esp);
+                  call kmain                      ; int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp);
 
 .halt:            cli                             ; if we ever return just go to sleep
                   hlt
@@ -52,10 +52,9 @@ start:
                   jmp .halt
 .end:
 
-
 %include "kernel/arch/i686/gdt-flush.s"
-%include "kernel/arch/i686/idt.s"
-%include "kernel/arch/i686/isrs.s"
+%include "kernel/arch/i686/idt-flush.s"
+%include "kernel/arch/i686/interrupts.s"
 
 section .bss
 align 16

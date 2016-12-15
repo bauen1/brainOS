@@ -1,49 +1,54 @@
 #include "gdt.h"
+#include "system.h"
 
-// from http://www.osdever.net/bkerndev/Docs/gdt.htm
+extern void gdt_flush(uint32_t);
 
-/* Setup a descriptor in the Global Descriptor Table */
-void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
-{
-    /* Setup the descriptor base address */
-    gdt[num].base_low = (base & 0xFFFF);
-    gdt[num].base_middle = (base >> 16) & 0xFF;
-    gdt[num].base_high = (base >> 24) & 0xFF;
+struct gdt_entry gdt_entries[3];
 
-    /* Setup the descriptor limits */
-    gdt[num].limit_low = (limit & 0xFFFF);
-    gdt[num].granularity = ((limit >> 16) & 0x0F);
-
-    /* Finally, set up the granularity and access flags */
-    gdt[num].granularity |= (gran & 0xF0);
-    gdt[num].access = access;
+static void gdt_set_gate(uint32_t i, uint32_t base, uint32_t limit, uint8_t access, uint8_t garnularity) {
+  gdt_entries[i].limit = limit & 0xFFFF;
+  gdt_entries[i].base = base & 0xFFFF;
+  gdt_entries[i].base2 = (base >> 16) & 0xFF;
+  gdt_entries[i].access = access;
+  gdt_entries[i].garnularity = (garnularity >> 16) & 0x0F;
+  gdt_entries[i].garnularity |= garnularity & 0xF0;
+  gdt_entries[i].base3 = (base >> 24) & 0xFF;
 }
 
-/* Should be called by main. This will setup the special GDT
-*  pointer, set up the first 3 entries in our GDT, and then
-*  finally call gdt_flush() in our assembler file in order
-*  to tell the processor where the new GDT is and update the
-*  new segment registers */
+static struct {
+  uint16_t size;
+  uint32_t offset;
+} __attribute__ ((packed)) gdt_p;
 
-void gdt_init()
-{
-    /* Setup the GDT pointer and limit */
-    gp.limit = (sizeof(struct gdt_entry) * 3) - 1;
-    gp.base = (int)&gdt;
+static struct gdt_tss_entry tss;
 
-    /* Our NULL descriptor */
-    gdt_set_gate(0, 0, 0, 0, 0);
+uint8_t kernel_stack[4096] __attribute__((aligned(0x04))); // 4kb
 
-    /* The second entry is our Code Segment. The base address
-    *  is 0, the limit is 4GBytes, it uses 4KByte granularity,
-    *  uses 32-bit opcodes, and is a Code Segment descriptor.
-    *  Please check the table above in the tutorial in order
-    *  to see exactly what each value means */
-    gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+void gdt_init(uint32_t esp0) {
+  memset((void*)&tss, sizeof(tss), 0x00);
+  tss.ss0 = 0x10;
+  tss.esp0 = (uint32_t)&kernel_stack; //FIXME
+  tss.IOPB_offset = sizeof(struct gdt_tss_entry);
 
-    /* The third entry is our Data Segment. It's EXACTLY the
-    *  same as our code segment, but the descriptor type in
-    *  this entry's access byte says it's a Data Segment */
-    gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
-    gdt_flush();
+  gdt_set_gate(0, 0, 0xFFFFFFFF, 0x00, 0x00); // NULL segment
+  gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel Code segment
+  gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel Data segment
+  //gdt_set_gate(3, 0, 0x00000000, 0x00, 0x00); // User Code segment
+  //gdt_set_gate(4, 0, 0x00000000, 0x00, 0x00); // User Data segment
+  gdt_set_gate(3, (uint32_t)&tss, sizeof(struct gdt_tss_entry), 0x89, 0x40); // TSS segment
+
+  gdt_p.offset = (uint32_t)&gdt_entries;
+  gdt_p.size = sizeof(struct gdt_entry) * 3 - 1;
+
+  puthex("sizeof(struct gdt_entry):  ", sizeof(struct gdt_entry));
+  puthex("(uint32_t)&gdt_entries[0]: ",(uint32_t)&gdt_entries[0]);
+  puthex("(uint32_t)&gdt_entries[1]: ",(uint32_t)&gdt_entries[0]);
+  puthex("(uint32_t)&gdt_entries[2]: ",(uint32_t)&gdt_entries[0]);
+  puthex("(uint32_t)&gdt_entries[3]: ",(uint32_t)&gdt_entries[0]);
+  puthex("(uint32_t)&gdt_entries[4]: ",(uint32_t)&gdt_entries[0]);
+  puthex("(uint32_t)&gdt_p:          ", (uint32_t)&gdt_p);
+  puthex("(uint32_t)gdt_p.size:      ", (uint32_t)gdt_p.size);
+  puthex("(uint32_t)gdt_p.offset:    ", (uint32_t)gdt_p.offset);
+
+  gdt_flush((uint32_t)&gdt_p);
 }

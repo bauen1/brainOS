@@ -6,7 +6,6 @@
 
 void *memcpy(void *destination, const void *source, size_t num);
 void *memset(void *destination, int c, size_t num);
-unsigned short *memsetw(unsigned short *destination, unsigned short v, size_t num);
 int strlen(char *str);
 
 unsigned char inportb (unsigned short port);
@@ -17,6 +16,6 @@ void puts (char *str);
 
 char * itoa( int value, char * str, int base );
 
-void puthex(const char * name, uint32_t v);
+void puthex(char * name, uint32_t v);
 
 #endif

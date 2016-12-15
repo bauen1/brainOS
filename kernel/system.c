@@ -20,15 +20,6 @@ void *memset(void *destination, int c, size_t num) {
   return destination;
 }
 
-unsigned short *memsetw(unsigned short *destination, unsigned short v, size_t num) {
-  unsigned short* d = destination;
-  for (size_t i = 0; i < num; i++) {
-    d[i] = v;
-  }
-
-  return destination;
-}
-
 int strlen(char *str) {
   int i;
   for (i = 0; str[i] != '\0'; i++) {}
@@ -102,7 +93,7 @@ static char get_hex_high(uint8_t v) {
   return "0123456789abcdef"[(v >> 4) & 0x0f];
 }
 
-void puthex(const char * name, uint32_t v) {
+void puthex(char * name, uint32_t v) {
   puts(name);
   puts("0x");
   putc(get_hex_high(v >> 24));

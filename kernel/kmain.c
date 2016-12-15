@@ -8,9 +8,10 @@
 #include "multiboot.h"
 #include "system.h"
 #include "tty.h"
+#include "idt.h"
 #include "gdt.h"
 
-int kmain (multiboot_t *multiboot_info, uintptr_t esp, uint32_t stack_size) {
+int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   tty_init();
   puts("brainOS v0.1\n");
   puts("boot information\n");
@@ -24,9 +25,12 @@ int kmain (multiboot_t *multiboot_info, uintptr_t esp, uint32_t stack_size) {
   putc('\n');
 
   puts("pre gdt_init();\n");
-  gdt_init();
+  gdt_init(esp);
   puts("post gdt_init();\n");
 
+  puts("pre idt_install();\n");
+  idt_install(esp);
+  puts("post idt_install();\n");
 
   puts("Nothing has blown up yet \\o/\n");
 

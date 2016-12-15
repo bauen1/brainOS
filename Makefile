@@ -29,10 +29,11 @@ clean:
 	rm -rf $(iso)
 	rm -rf */*.o *.o
 	rm -rf */*.bin *.bin
+	rm -rf kernel/arch/*/*.o
 
 .PHONY: qemu
 qemu: $(iso)
-	qemu-system-x86_64 -drive file=$(iso),format=raw -m 256M -s
+	qemu-system-x86_64 -drive file=$(iso),format=raw -s -d int,in_asm -no-reboot
 
 iso: $(iso)
 
@@ -49,6 +50,9 @@ kernel/%.o: kernel/%.c
 	$(cc) $(cflags) -c $< -o $@
 
 kernel/%.o: kernel/%.s
+	$(asm) $(asmflags) -felf $< -o $@
+
+kernel/arch/$(TARGET)/boot.o: kernel/arch/$(TARGET)/boot.s kernel/arch/$(TARGET)/*.s |  kernel/arch/$(TARGET)/linker.ld
 	$(asm) $(asmflags) -felf $< -o $@
 
 toolchain: toolchain/build.sh
