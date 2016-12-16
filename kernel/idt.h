@@ -27,6 +27,12 @@ typedef struct registers {
 
 void idt_install();
 
+typedef void (*isr_t)(struct registers);
+
+void set_isr_handler(uint8_t i, isr_t handler);
+void set_default_isr_handler(isr_t handler);
+#define set_irq_handler(i, h) (set_isr_handler((i)+32, (h)))
+
 #define PIC1_COMMAND 0x20
 #define PIC1_DATA 0x21
 #define PIC2_COMMAND 0xA0

@@ -20,6 +20,8 @@ asmflags=-w+orphan-labels
 isodir=./iso
 iso=image.iso
 
+qemuflags ?= -drive file=$(iso),format=raw -s -no-reboot
+
 .DEFAULT: all
 .PHONY: all
 all: image
@@ -33,7 +35,7 @@ clean:
 
 .PHONY: qemu
 qemu: $(iso)
-	qemu-system-x86_64 -drive file=$(iso),format=raw -s -d int,in_asm -no-reboot
+	qemu-system-x86_64 $(qemuflags)
 
 iso: $(iso)
 

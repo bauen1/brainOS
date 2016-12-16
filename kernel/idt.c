@@ -75,21 +75,21 @@ void idt_install() {
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
 
   idt_set_gate(32, (uint32_t)irq0 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq1 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq2 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq3 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq4 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq5 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq6 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq7 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq8 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq9 , 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq10, 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq11, 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq12, 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq13, 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq14, 0x08, 0x8E);
-  idt_set_gate(32, (uint32_t)irq15, 0x08, 0x8E);
+  idt_set_gate(33, (uint32_t)irq1 , 0x08, 0x8E);
+  idt_set_gate(34, (uint32_t)irq2 , 0x08, 0x8E);
+  idt_set_gate(35, (uint32_t)irq3 , 0x08, 0x8E);
+  idt_set_gate(36, (uint32_t)irq4 , 0x08, 0x8E);
+  idt_set_gate(37, (uint32_t)irq5 , 0x08, 0x8E);
+  idt_set_gate(38, (uint32_t)irq6 , 0x08, 0x8E);
+  idt_set_gate(39, (uint32_t)irq7 , 0x08, 0x8E);
+  idt_set_gate(40, (uint32_t)irq8 , 0x08, 0x8E);
+  idt_set_gate(41, (uint32_t)irq9 , 0x08, 0x8E);
+  idt_set_gate(43, (uint32_t)irq10, 0x08, 0x8E);
+  idt_set_gate(44, (uint32_t)irq11, 0x08, 0x8E);
+  idt_set_gate(45, (uint32_t)irq12, 0x08, 0x8E);
+  idt_set_gate(46, (uint32_t)irq13, 0x08, 0x8E);
+  idt_set_gate(47, (uint32_t)irq14, 0x08, 0x8E);
+  idt_set_gate(48, (uint32_t)irq15, 0x08, 0x8E);
 
   //idt_set_gate(0x80, (uint32_t)isr0, 0x08, 0x8E);
 
@@ -140,9 +140,29 @@ const char* exception[] = {
   "Reserved",
 };
 
+isr_t isr_handlers[257];
+
+static void call_isr_handler(struct registers registers) {
+  if (isr_handlers[registers.isr_num] != 0) {
+    isr_handlers[registers.isr_num](registers);
+  } else {
+    if (isr_handlers[256] != 0) {
+      isr_handlers[256](registers);
+    }
+  }
+}
+
+void set_isr_handler(uint8_t i, isr_t handler) {
+  isr_handlers[i] = handler;
+}
+
+void set_default_isr_handler(isr_t handler) {
+  isr_handlers[256] = handler;
+}
+
 void isr_handler(struct registers registers) __attribute__((optimize("0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
 void isr_handler(struct registers registers) {
-  puts(exception[registers.isr_num]);
+  /*puts(exception[registers.isr_num]);
   putc('\n');
   puthex("ds:       ", registers.ds);
   puthex("edi:      ", registers.edi);
@@ -164,27 +184,18 @@ void isr_handler(struct registers registers) {
   __asm__ __volatile__ ("cli");
   for(;;){
     __asm__ __volatile__ ("hlt");
-  }
+  }*/
+  call_isr_handler(registers);
 }
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27234
 void irq_handler(volatile struct registers registers) __attribute__((optimize("-O0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
 void irq_handler(volatile struct registers registers) {
-  if (registers.isr_num >= 8) { // in this case irq num
+  if (registers.isr_num >= 40) { // in this case irq num
     outportb(PIC2_COMMAND, PIC_EOI);
   }
 
   outportb(PIC1_COMMAND, PIC_EOI);
 
-  //registers.ds = 0x10; // look at the function attribute ( this prevents a tail call )
-
-  putc("0123456789abcdef"[registers.isr_num % 16]);
-
-  if (registers.isr_num == 1) {
-    puts("\nTEST\n");
-    __asm__ __volatile__ ("cli");
-    for(;;){
-      __asm__ __volatile__ ("hlt");
-    }
-  }
+  call_isr_handler(registers);
 }
