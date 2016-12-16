@@ -1,33 +1,6 @@
 #include "system.h"
+#include "string.h"
 #include "tty.h"
-
-void *memcpy(void *destination, const void *source, size_t num) {
-  char* d = destination;
-  char* s = (void*)source;
-  for (size_t i = 0; i < num; i++) {
-    d[i] = s[i];
-  }
-
-  return destination;
-}
-
-void *memset(void *destination, int c, size_t num) {
-  char* d = destination;
-  for (size_t i = 0; i < num; i++) {
-    d[i] = c;
-  }
-
-  return destination;
-}
-
-size_t strlen(const char *str) {
-  size_t length = 0;
-  while (str[length]) {
-    length++;
-  }
-
-  return length;
-}
 
 unsigned char inportb (unsigned short port) {
   unsigned char rv;

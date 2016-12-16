@@ -11,12 +11,13 @@
 #include "idt.h"
 #include "gdt.h"
 
+__attribute__((OS_main));
 int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   tty_init();
   puts("brainOS v0.1\n");
   puts("boot information\n");
-  puthex("stack size: ", stack_size);
-  puthex("esp:        ", esp);
+  puthex("stack size:      ", stack_size);
+  puthex("esp:             ", esp);
 
   puts("multiboot_info flags:");
   char buffer[1024];
@@ -32,7 +33,9 @@ int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
 
   __asm__ __volatile__("sti");  // enable interrupts
 
-  for(;;){}
+  for(;;){
+    __asm__ __volatile__ ("hlt");
+  }
 
   puts("Nothing has blown up yet \\o/\n");
 

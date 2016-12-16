@@ -3,7 +3,7 @@
 
 extern void gdt_flush(uint32_t);
 
-struct gdt_entry gdt_entries[3];
+struct gdt_entry gdt_entries[5];
 
 static void gdt_set_gate(uint32_t i, uint32_t base, uint32_t limit, uint8_t access, uint8_t garnularity) {
   gdt_entries[i].limit = limit & 0xFFFF;
@@ -33,12 +33,12 @@ void gdt_init(uint32_t esp0) {
   gdt_set_gate(0, 0, 0xFFFFFFFF, 0x00, 0x00); // NULL segment
   gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel Code segment
   gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel Data segment
-  //gdt_set_gate(3, 0, 0x00000000, 0x00, 0x00); // User Code segment
-  //gdt_set_gate(4, 0, 0x00000000, 0x00, 0x00); // User Data segment
-  gdt_set_gate(3, (uint32_t)&tss, sizeof(struct gdt_tss_entry), 0x89, 0x40); // TSS segment
+  gdt_set_gate(3, 0, 0x00000000, 0x00, 0x00); // User Code segment
+  gdt_set_gate(4, 0, 0x00000000, 0x00, 0x00); // User Data segment
+  gdt_set_gate(5, (uint32_t)&tss, sizeof(struct gdt_tss_entry), 0x89, 0x40); // TSS segment
 
   gdt_p.offset = (uint32_t)&gdt_entries;
-  gdt_p.size = sizeof(struct gdt_entry) * 3 - 1;
+  gdt_p.size = sizeof(struct gdt_entry) * 5 - 1;
   
   puts("Flushing GDT table\n");
   gdt_flush((uint32_t)&gdt_p);

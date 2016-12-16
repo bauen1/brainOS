@@ -25,20 +25,20 @@ void idt_install() {
   memset((void*)&idt_entries, 0x0, sizeof(struct idt_entry) * 256);
 
   // initialize the PIC
-  outportb(0x20, 0x11);
-  outportb(0xA0, 0x11);
+  outportb(PIC1_COMMAND, 0x11);
+  outportb(PIC2_COMMAND, 0x11);
 
-  outportb(0x21, 0x20); // IRQ0-7 maps to ISR32-39
-  outportb(0xA1, 0x28); // IRQ8-15 maps to ISR40-47
+  outportb(PIC1_DATA, 0x20); // IRQ0-7 maps to ISR32-39
+  outportb(PIC2_DATA, 0x28); // IRQ8-15 maps to ISR40-47
 
-  outportb(0x21, 0x04);
-  outportb(0xA1, 0x02);
+  outportb(PIC1_DATA, 0x04);
+  outportb(PIC2_DATA, 0x02);
 
-  outportb(0x21, 0x01);
-  outportb(0xA1, 0x01);
+  outportb(PIC1_DATA, 0x01);
+  outportb(PIC2_DATA, 0x01);
 
-  outportb(0x21, 0x00);
-  outportb(0xA1, 0x00);
+  outportb(PIC1_DATA, 0x00);
+  outportb(PIC2_DATA, 0x00);
   //
 
   idt_set_gate( 0, (uint32_t)isr0 , 0x08, 0x8E);
@@ -91,7 +91,7 @@ void idt_install() {
   idt_set_gate(32, (uint32_t)irq14, 0x08, 0x8E);
   idt_set_gate(32, (uint32_t)irq15, 0x08, 0x8E);
 
-  idt_set_gate(0x80, (uint32_t)isr0, 0x08, 0x8E);
+  //idt_set_gate(0x80, (uint32_t)isr0, 0x08, 0x8E);
 
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;
@@ -140,6 +140,7 @@ const char* exception[] = {
   "Reserved",
 };
 
+void isr_handler(struct registers registers) __attribute__((optimize("0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
 void isr_handler(struct registers registers) {
   puts(exception[registers.isr_num]);
   putc('\n');
@@ -160,17 +161,30 @@ void isr_handler(struct registers registers) {
   puthex("useresp:  ", registers.useresp);
   puthex("ss:       ", registers.ss);
 
-
-  puts("\nTEST\n");
-  for(;;){}
+  __asm__ __volatile__ ("cli");
+  for(;;){
+    __asm__ __volatile__ ("hlt");
+  }
 }
 
-void irq_handler(struct registers registers) {
-  if (registers.isr_num >= 40) {
-    outportb(0xA0, 0x20);
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27234
+void irq_handler(volatile struct registers registers) __attribute__((optimize("-O0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
+void irq_handler(volatile struct registers registers) {
+  if (registers.isr_num >= 8) { // in this case irq num
+    outportb(PIC2_COMMAND, PIC_EOI);
   }
 
-  outportb(0x20, 0x20);
+  outportb(PIC1_COMMAND, PIC_EOI);
 
-  //puts("T\n");
+  //registers.ds = 0x10; // look at the function attribute ( this prevents a tail call )
+
+  putc("0123456789abcdef"[registers.isr_num % 16]);
+
+  if (registers.isr_num == 1) {
+    puts("\nTEST\n");
+    __asm__ __volatile__ ("cli");
+    for(;;){
+      __asm__ __volatile__ ("hlt");
+    }
+  }
 }

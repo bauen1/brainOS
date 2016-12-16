@@ -27,7 +27,7 @@ isr_common_stub:
               iret
 
 irq_common_stub:
-              pusha
+              pushad              ; push eax, ecx, edx, ebx, original esp, ebp, esi, edi
 
               mov ax, ds
               push eax            ; save the ds
@@ -40,16 +40,16 @@ irq_common_stub:
 
               call irq_handler
 
-              pop ebx             ; original ds
+              pop ebx
               mov ds, bx
               mov es, bx
               mov fs, bx
               mov gs, bx
 
-              popa
+              popad               ; pops eax, ecx, edx, ebx, original esp, ebp, esi, edi
               add esp, 8          ; removes the error code & isr num
               sti
-              iret
+              iretd
 
 global isr0
 isr0:         cli
