@@ -30,6 +30,10 @@ int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   puts("pre idt_install();\n");
   idt_install(esp);
   puts("post idt_install();\n");
+  puts("pre keyboard_install();\n");
+  keyboard_install();
+  puts("post keyboard_install();\n");
+
 
   __asm__ __volatile__("sti");  // enable interrupts
 
