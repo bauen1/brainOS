@@ -2,13 +2,11 @@
 #include "system.h"
 #include "vga.h"
 
-static unsigned short *memsetw(unsigned short *destination, unsigned short v, size_t num) {
+static void *memsetw(unsigned short *destination, unsigned short v, size_t num) {
   unsigned short* d = destination;
   for (size_t i = 0; i < num; i++) {
     d[i] = v;
   }
-
-  return destination;
 }
 
 uint16_t *video_memory;
@@ -19,8 +17,7 @@ uint8_t x, y;
 uint16_t blank;
 
 static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
-  const uint8_t i = y * VGA_WIDTH + x;
-  video_memory[i] = get_vga_v(c, attribute);
+  video_memory[y * VGA_WIDTH + x] = get_vga_v(c, attribute);
 }
 
 void tty_init() {
@@ -41,7 +38,7 @@ static void scroll() {
   unsigned char tmp;
   if (y >= VGA_HEIGHT) {
     tmp = y - VGA_HEIGHT + 1;
-    memcpy(video_memory, video_memory + tmp * VGA_WIDTH, (VGA_HEIGHT - tmp) * VGA_HEIGHT * 2);
+    memcpy(video_memory, video_memory + (tmp * VGA_WIDTH), (VGA_HEIGHT - tmp) * VGA_HEIGHT * 2);
 
     memsetw((short unsigned int*)video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH, blank, VGA_WIDTH);
     y = VGA_HEIGHT - 1;

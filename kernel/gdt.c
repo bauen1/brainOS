@@ -39,16 +39,7 @@ void gdt_init(uint32_t esp0) {
 
   gdt_p.offset = (uint32_t)&gdt_entries;
   gdt_p.size = sizeof(struct gdt_entry) * 3 - 1;
-
-  puthex("sizeof(struct gdt_entry):  ", sizeof(struct gdt_entry));
-  puthex("(uint32_t)&gdt_entries[0]: ",(uint32_t)&gdt_entries[0]);
-  puthex("(uint32_t)&gdt_entries[1]: ",(uint32_t)&gdt_entries[0]);
-  puthex("(uint32_t)&gdt_entries[2]: ",(uint32_t)&gdt_entries[0]);
-  puthex("(uint32_t)&gdt_entries[3]: ",(uint32_t)&gdt_entries[0]);
-  puthex("(uint32_t)&gdt_entries[4]: ",(uint32_t)&gdt_entries[0]);
-  puthex("(uint32_t)&gdt_p:          ", (uint32_t)&gdt_p);
-  puthex("(uint32_t)gdt_p.size:      ", (uint32_t)gdt_p.size);
-  puthex("(uint32_t)gdt_p.offset:    ", (uint32_t)gdt_p.offset);
-
+  
+  puts("Flushing GDT table\n");
   gdt_flush((uint32_t)&gdt_p);
 }

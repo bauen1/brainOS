@@ -24,13 +24,15 @@ int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   puts(&buffer[0]);
   putc('\n');
 
-  puts("pre gdt_init();\n");
   gdt_init(esp);
-  puts("post gdt_init();\n");
 
   puts("pre idt_install();\n");
   idt_install(esp);
   puts("post idt_install();\n");
+
+  __asm__ __volatile__("sti");  // enable interrupts
+
+  for(;;){}
 
   puts("Nothing has blown up yet \\o/\n");
 
