@@ -1,5 +1,6 @@
 #include "keyboard.h"
 
+#include "system.h"
 #include "idt.h"
 
 static unsigned char keyboard_map[128] = {
@@ -42,6 +43,8 @@ static unsigned char keyboard_map[128] = {
   0, // f11
   0, // f12
   0, // TODO: implement the rest of em
+  // 92:
+  0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 
 };
 

@@ -2,7 +2,7 @@
 #include "system.h"
 #include "vga.h"
 
-static void *memsetw(unsigned short *destination, unsigned short v, size_t num) {
+static void memsetw(unsigned short *destination, unsigned short v, size_t num) {
   unsigned short* d = destination;
   for (size_t i = 0; i < num; i++) {
     d[i] = v;
@@ -63,7 +63,7 @@ void tty_putc(char c) {
     x++;
   }
 
-  if (x >= VGA_WIDTH) {
+  if (x > VGA_WIDTH) {
     x = 0;
     y++;
   }

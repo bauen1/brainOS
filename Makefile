@@ -32,6 +32,7 @@ clean:
 	rm -rf */*.o *.o
 	rm -rf */*.bin *.bin
 	rm -rf kernel/arch/*/*.o
+	rm -rf iso/*
 
 .PHONY: qemu
 qemu: $(iso)
@@ -39,11 +40,16 @@ qemu: $(iso)
 
 iso: $(iso)
 
-$(iso): kernel/kernel.bin
+$(iso): $(isodir)/boot/grub/grub.cfg kernel/kernel.bin LICENCE
+	mkdir -p $(isodir)/boot/grub
+	mkdir -p $(isodir)/boot/brainOS
+	cp kernel/kernel.bin $(isodir)/boot/brainOS/kernel.bin
+	cp LICENCE $(isodir)/boot/brainOS/LICENCE
+	$(grub-mkrescue) -o $(iso) $(isodir)
+
+$(isodir)/boot/grub/grub.cfg: grub.cfg
 	mkdir -p $(isodir)/boot/grub
 	cp grub.cfg $(isodir)/boot/grub/grub.cfg
-	cp kernel/kernel.bin $(isodir)/boot/grub/kernel.bin
-	$(grub-mkrescue) -o $(iso) $(isodir)
 
 kernel/kernel.bin: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h kernel/arch/$(TARGET)/*
 	$(cc) $(cflags) -o $@ -T $^

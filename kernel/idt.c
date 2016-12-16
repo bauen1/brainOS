@@ -37,8 +37,8 @@ void idt_install() {
   outportb(PIC1_DATA, 0x01);
   outportb(PIC2_DATA, 0x01);
 
-  outportb(PIC1_DATA, 0x00);
-  outportb(PIC2_DATA, 0x00);
+  outportb(PIC1_DATA, 0x00); // enable interrupts 0-7
+  outportb(PIC2_DATA, 0x00); // enable interrupts 8-15
   //
 
   idt_set_gate( 0, (uint32_t)isr0 , 0x08, 0x8E);

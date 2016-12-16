@@ -17,8 +17,9 @@ void putc (char c) {
 }
 
 void puts (char *str) {
-  for (int i = 0; i < strlen(str); i++) {
-    putc(str[i]);
+  size_t i = 0;
+  while(str[i] != 0) {
+    putc(str[i++]);
   }
 }
 

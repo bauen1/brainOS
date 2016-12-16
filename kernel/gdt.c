@@ -3,7 +3,7 @@
 
 extern void gdt_flush(uint32_t);
 
-struct gdt_entry gdt_entries[5];
+struct gdt_entry gdt_entries[6];
 
 static void gdt_set_gate(uint32_t i, uint32_t base, uint32_t limit, uint8_t access, uint8_t garnularity) {
   gdt_entries[i].limit = limit & 0xFFFF;
@@ -39,7 +39,7 @@ void gdt_init(uint32_t esp0) {
 
   gdt_p.offset = (uint32_t)&gdt_entries;
   gdt_p.size = sizeof(struct gdt_entry) * 5 - 1;
-  
+
   puts("Flushing GDT table\n");
   gdt_flush((uint32_t)&gdt_p);
 }

@@ -10,8 +10,8 @@
 #include "tty.h"
 #include "idt.h"
 #include "gdt.h"
+#include "keyboard.h"
 
-__attribute__((OS_main));
 int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   tty_init();
   puts("brainOS v0.1\n");
@@ -40,8 +40,6 @@ int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
   for(;;){
     __asm__ __volatile__ ("hlt");
   }
-
-  puts("Nothing has blown up yet \\o/\n");
 
   return 1;
 }
