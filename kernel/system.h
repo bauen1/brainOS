@@ -6,7 +6,7 @@
 
 void *memcpy(void *destination, const void *source, size_t num);
 void *memset(void *destination, int c, size_t num);
-int strlen(char *str);
+size_t strlen(const char *str);
 
 unsigned char inportb (unsigned short port);
 void outportb (unsigned short port, unsigned char data);

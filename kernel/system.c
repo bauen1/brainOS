@@ -20,10 +20,13 @@ void *memset(void *destination, int c, size_t num) {
   return destination;
 }
 
-int strlen(char *str) {
-  int i;
-  for (i = 0; str[i] != '\0'; i++) {}
-  return i;
+size_t strlen(const char *str) {
+  size_t length = 0;
+  while (str[length]) {
+    length++;
+  }
+
+  return length;
 }
 
 unsigned char inportb (unsigned short port) {
