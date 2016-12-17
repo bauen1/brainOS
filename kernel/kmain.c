@@ -10,6 +10,7 @@
 #include "vga.h"
 #include "tty.h"
 #include "idt.h"
+#include "time.h"
 #include "gdt.h"
 #include "keyboard.h"
 
@@ -85,11 +86,10 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
   tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
   putc('\n');
   puts("boot information:\n");
+  puthex("mboot->flags:       ", mboot->flags);
   puthex("stack size:         ", stack_size);
   puthex("esp:                ", esp);
-
-  putc('\n');
-  puthex("mboot->flags:       ", mboot->flags);
+  puthex("modules count:      ", mboot->mods_count);
   putc('\n');
 
   char buf[64];
