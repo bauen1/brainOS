@@ -3,6 +3,7 @@ language: c
 install:
   - sudo apt-get install libmpc-dev
   - sudo apt-get install nasm
+  - sudo apt-get install xorriso
   - make toolchain
 
 script: make
