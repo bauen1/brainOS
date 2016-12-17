@@ -48,7 +48,7 @@ static unsigned char keyboard_map[128] = {
 
 };
 
-static void keyboard_irq1(struct registers registers) {
+static void keyboard_irq1(struct registers * registers) {
   uint8_t status;
   char keycode;
 

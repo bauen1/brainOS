@@ -101,9 +101,10 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
 
   gdt_init();
   idt_install();
+
   keyboard_install();
-  time_init();
-  pci_install();
+  //time_init();
+  //pci_install();
 
   for (int i = 0; i < 32; i++) {
     set_isr_handler(i, kpanic);
