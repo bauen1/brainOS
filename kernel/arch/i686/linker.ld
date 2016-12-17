@@ -1,12 +1,15 @@
-ENTRY(start)
+ENTRY(_boot)
 phys = 0x00100000;
 SECTIONS
 {
       . = 1M;
 
+      start = .; _start = .; __start = .;
+
       .text phys : AT(phys)
       {
         code = .;
+        *(._multiboot_header)
         *(.text)
         *(.rodata)
       }

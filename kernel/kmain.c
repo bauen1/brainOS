@@ -7,38 +7,47 @@
 
 #include "multiboot.h"
 #include "system.h"
+#include "vga.h"
 #include "tty.h"
 #include "idt.h"
 #include "gdt.h"
 #include "keyboard.h"
 
-int kmain (multiboot_t *multiboot_info, uint32_t stack_size, uintptr_t esp) {
+int kmain (multiboot_t *mboot, uint32_t stack_size, uintptr_t esp) {
   tty_init();
-  puts("brainOS v0.1\n");
-  puts("boot information\n");
-  puthex("stack size:      ", stack_size);
-  puthex("esp:             ", esp);
+  tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
+  puts("+------------------------------------------------------------------------------+\n");
+  puts("| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n");
+  puts("+------------------------------------------------------------------------------+\n");
+  tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+  putc('\n');
+  puts("boot information:\n");
+  puthex("stack size:         ", stack_size);
+  puthex("esp:                ", esp);
 
-  puts("multiboot_info flags:");
-  char buffer[1024];
-  itoa(multiboot_info->flags, &buffer[0], 2);
-  puts(&buffer[0]);
+  putc('\n');
+  puthex("mboot->flags:       ", mboot->flags);
   putc('\n');
 
+  char buf[64];
+  memset((void*)buf, 0, 20);
+  itoa(mboot->mem_upper - mboot->mem_lower, (char*)&buf, 10);
+  puts("calculated memory (from mboot->mem_upper - mboot->mem_lower):    ");
+  puts(&buf[0]);
+  puts("kb\n");
+
   gdt_init(esp);
-
-  puts("pre idt_install();\n");
-  idt_install(esp);
-  puts("post idt_install();\n");
-  puts("pre keyboard_install();\n");
+  idt_install();
   keyboard_install();
-  puts("post keyboard_install();\n");
-
 
   __asm__ __volatile__("sti");  // enable interrupts
 
   for(;;){
     __asm__ __volatile__ ("hlt");
+    uint32_t t = get_time();
+    if ((t % 200) == 0) {
+      //puthex("time:  ", t);
+    }
   }
 
   return 1;

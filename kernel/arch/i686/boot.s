@@ -10,26 +10,26 @@ STACK_SIZE equ 16384 ; 16kb (gotta think big)
 
 bits 32
 
-global mboot
+section ._multiboot_header
+
 extern code, bss, end
 
-section .text
-
-align 4
-mboot:
+align 0x4
+_multiboot_header:
                 dd MB_HEADER_MAGIC                ;
                 dd MB_HEADER_FLAGS                ;
                 dd MB_CHECKSUM                    ;
 
-                dd mboot                          ;
+                dd _multiboot_header              ;
                 dd code                           ;
                 dd bss                            ;
                 dd end                            ;
-                dd start                          ;
+                dd _boot                          ;
 
-global start:function start.end-start
+section .text
+global _boot:function _boot.end-_boot
 extern kmain
-start:
+_boot:
                   cli                             ; first order: disable interrupts
                   cmp eax, MB_EAX_MAGIC
                   jne .no_multiboot

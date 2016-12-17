@@ -58,7 +58,7 @@ static void keyboard_irq1(struct registers registers) {
     if (keycode < 0) {
       return;
     }
-    putc(keyboard_map[keycode]);
+    putc(keyboard_map[(uint8_t)keycode]);
   }
   return;
 }

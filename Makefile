@@ -20,7 +20,7 @@ asmflags=-w+orphan-labels
 isodir=./iso
 iso=image.iso
 
-qemuflags ?= -drive file=$(iso),format=raw -s -no-reboot
+qemuflags ?= -drive file=$(iso),format=raw -s
 
 .DEFAULT: all
 .PHONY: all
