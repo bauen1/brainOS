@@ -2,6 +2,11 @@ language: c
 
 install:
   - sudo apt-get install libmpc-dev
+  - sudo apt-get install nasm
   - make toolchain
 
 script: make
+
+cache:
+  - directories:
+    - $HOME/toolchain/opt
