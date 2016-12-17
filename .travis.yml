@@ -1,5 +1,9 @@
 language: c
 
-install: make toolchain
+install:
+  - sudo apt-get install gmp
+  - sudo apt-get install mpfr
+  - sudo apt-get install mpc
+  - make toolchain
 
 script: make
