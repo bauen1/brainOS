@@ -24,7 +24,7 @@ qemuflags ?= -drive file=$(iso),format=raw -s -net none
 
 .DEFAULT: all
 .PHONY: all
-all: image
+all: iso
 
 .PHONY: clean
 clean:

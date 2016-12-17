@@ -1,2 +1,5 @@
 language: c
+
+install: make toolchain
+
 script: make
