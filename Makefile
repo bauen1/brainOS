@@ -9,17 +9,18 @@ cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 objcopy=$(TOOLS)-objcopy
 ld=$(TOOLS)-ld
-asm=nasm
+nasm=nasm
 grub-mkrescue=/Users/jh/opt/cross/bin/grub-mkrescue #fixme
 
-cflags=-nostdlib -std=gnu99 -O2 -ffreestanding
-cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format -g
-asmflags=-w+orphan-labels
+cflags  =-std=gnu99 -O2 -ffreestanding
+cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
+cflags +=-g
+nasmflags=-w+orphan-labels
 
 isodir=./iso
 iso=image.iso
 
-qemuflags ?= -drive file=$(iso),format=raw -s
+qemuflags ?= -drive file=$(iso),format=raw -s -net none
 
 .DEFAULT: all
 .PHONY: all
@@ -66,13 +67,13 @@ kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
 kernel/kernel.elf: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h kernel/arch/$(TARGET)/*
-	$(cc) $(cflags) -o $@ -T $^
+	$(cc) $(cflags) -nostdlib -o $@ -T $^
 
 kernel/%.o: kernel/%.c
-	$(cc) $(cflags) -c $< -o $@
+	$(cc) $(cflags) -nostdlib -c $< -o $@
 
 kernel/arch/$(TARGET)/boot.o: kernel/arch/$(TARGET)/boot.s kernel/arch/$(TARGET)/*.s
-	$(asm) $(asmflags) -felf $< -o $@
+	$(nasm) $(nasmflags) -felf $< -o $@
 
 kernel/arch/$(ARCH)/%.o: kernel/arch/$(ARCH)/%.s | kernel/arch/$(ARCH)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
-	$(asm) $(asmflags) -felf $< -o $@
+	$(nasm) $(nasmflags) -felf $< -o $@
