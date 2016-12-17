@@ -105,97 +105,27 @@ void idt_install() {
   //putc(10/0);
 }
 
-const char* exception[] = {
-  "Division by Zero",
-  "Debug Exception",
-  "NMI",
-  "Breakpoint",
-  "into detected overflow",
-  "Out of Bounds",
-  "Invalid Opcode",
-  "No coprocessor",
-  "Double Fault",
-  "coprocessor segment overrun",
-  "Bad TSS",
-  "Segment not present",
-  "Stack fault",
-  "General Protection Fault",
-  "Page Fault",
-  "Unknown interrupt exception",
-  "coprocessor fault",
-  "alignment check exception",
-  "machine check exception",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-  "Reserved",
-};
-
-isr_t isr_handlers[257];
-
-static void call_isr_handler(struct registers registers) {
-  if (isr_handlers[registers.isr_num] != 0) {
-    isr_handlers[registers.isr_num](registers);
-  } else {
-    if (isr_handlers[256] != 0) {
-      isr_handlers[256](registers);
-    }
-  }
-}
+isr_t isr_handlers[256];
 
 void set_isr_handler(uint8_t i, isr_t handler) {
   isr_handlers[i] = handler;
 }
 
-void set_default_isr_handler(isr_t handler) {
-  isr_handlers[256] = handler;
-}
-
-void isr_handler(struct registers registers) __attribute__((optimize("0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
-void isr_handler(struct registers registers) {
-  /*puts(exception[registers.isr_num]);
-  putc('\n');
-  puthex("ds:       ", registers.ds);
-  puthex("edi:      ", registers.edi);
-  puthex("esi:      ", registers.esi);
-  puthex("ebp:      ", registers.ebp);
-  puthex("esp:      ", registers.esp);
-  puthex("ebx:      ", registers.ebx);
-  puthex("edx:      ", registers.edx);
-  puthex("ecx:      ", registers.ecx);
-  puthex("eax:      ", registers.eax);
-  puthex("isr_num:  ", registers.isr_num);
-  puthex("err_code: ", registers.err_code);
-  puthex("eip:      ", registers.eip);
-  puthex("cs:       ", registers.cs);
-  puthex("eflags:   ", registers.eflags);
-  puthex("useresp:  ", registers.useresp);
-  puthex("ss:       ", registers.ss);
-
-  __asm__ __volatile__ ("cli");
-  for(;;){
-    __asm__ __volatile__ ("hlt");
-  }*/
-  call_isr_handler(registers);
+void isr_handler(struct registers * registers) {
+  if (isr_handlers[registers->isr_num] != 0) {
+    isr_handlers[registers->isr_num](registers);
+  }
 }
 
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27234
-void irq_handler(volatile struct registers registers) __attribute__((optimize("-O0"))); // Disable optimization because gcc likes to mock around with the argument stack otherwise
-void irq_handler(volatile struct registers registers) {
-  if (registers.isr_num >= 40) { // in this case irq num
+void irq_handler(struct registers * registers) {
+  if (registers->isr_num >= 40) { // in this case irq num
     outportb(PIC2_COMMAND, PIC_EOI);
   }
 
   outportb(PIC1_COMMAND, PIC_EOI);
 
-  call_isr_handler(registers);
+  if (isr_handlers[registers->isr_num] != 0) {
+    isr_handlers[registers->isr_num](registers);
+  }
 }

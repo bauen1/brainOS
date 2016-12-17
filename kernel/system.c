@@ -6,7 +6,7 @@ void putc (char c) {
   tty_putc(c);
 }
 
-void puts (char *str) {
+void puts (char * str) {
   size_t i = 0;
   while(str[i] != 0) {
     putc(str[i++]);

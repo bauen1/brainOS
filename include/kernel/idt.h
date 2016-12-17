@@ -13,7 +13,7 @@ typedef struct idt_entry {
 } __attribute__((packed)) idt_entry_t;
 
 typedef struct registers {
-  uint32_t ds;
+  uint32_t gs, fs, es, ds; // segment registers
   uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
   uint32_t isr_num;
   uint32_t err_code;
@@ -27,10 +27,9 @@ typedef struct registers {
 
 void idt_install();
 
-typedef void (*isr_t)(struct registers);
+typedef void (* isr_t)(struct registers *);
 
 void set_isr_handler(uint8_t i, isr_t handler);
-void set_default_isr_handler(isr_t handler);
 #define set_irq_handler(i, h) (set_isr_handler((i)+32, (h)))
 
 #define PIC1_COMMAND 0x20

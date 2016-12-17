@@ -2,10 +2,12 @@ extern isr_handler
 extern irq_handler
 
 isr_common_stub:
-              pusha
+              pushad
 
-              mov ax, ds
-              push eax            ; save the ds
+              push ds
+              push es
+              push fs
+              push gs
 
               mov ax, 0x10        ; kernel data segment
               mov ds, ax
@@ -13,15 +15,17 @@ isr_common_stub:
               mov fs, ax
               mov gs, ax
 
+              push esp
               call isr_handler
+              add esp, 4
 
-              pop ebx             ; original ds
-              mov ds, bx
-              mov es, bx
-              mov fs, bx
-              mov gs, bx
+              pop gs
+              pop fs
+              pop es
+              pop ds
 
-              popa
+              popad
+
               add esp, 8          ; removes the error code & isr num
               sti
               iret
@@ -29,8 +33,10 @@ isr_common_stub:
 irq_common_stub:
               pushad              ; push eax, ecx, edx, ebx, original esp, ebp, esi, edi
 
-              mov ax, ds
-              push eax            ; save the ds
+              push ds
+              push es
+              push fs
+              push gs
 
               mov ax, 0x10        ; kernel data segment
               mov ds, ax
@@ -38,13 +44,14 @@ irq_common_stub:
               mov fs, ax
               mov gs, ax
 
+              push esp
               call irq_handler
+              add esp, 4
 
-              pop ebx
-              mov ds, bx
-              mov es, bx
-              mov fs, bx
-              mov gs, bx
+              pop gs
+              pop fs
+              pop es
+              pop ds
 
               popad               ; pops eax, ecx, edx, ebx, original esp, ebp, esi, edi
               add esp, 8          ; removes the error code & isr num
