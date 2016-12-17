@@ -39,6 +39,10 @@ int kmain (multiboot_t *mboot, uint32_t stack_size, uintptr_t esp) {
   gdt_init(esp);
   idt_install();
   keyboard_install();
+  char *buf1 = "tesa";
+  char *buf2 = "tesb";
+  putc('\n');
+  _puthex_8((uint8_t)memcmp((void*)buf1,(void*)buf2,5));
 
   __asm__ __volatile__("sti");  // enable interrupts
 

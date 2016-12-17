@@ -24,10 +24,10 @@ static struct gdt_tss_entry tss;
 
 uint8_t kernel_stack[4096] __attribute__((aligned(0x04))); // 4kb
 
-void gdt_init(uint32_t esp0) {
+void gdt_init() {
   memset((void*)&tss, sizeof(tss), 0x00);
   tss.ss0 = 0x10;
-  tss.esp0 = (uint32_t)&kernel_stack; //FIXME
+  tss.esp0 = (uint32_t)&kernel_stack;
   tss.IOPB_offset = sizeof(struct gdt_tss_entry);
 
   gdt_set_gate(0, 0, 0xFFFFFFFF, 0x00, 0x00); // NULL segment

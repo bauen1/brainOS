@@ -2,14 +2,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// TODO: FIXME: Implement
+// TODO: Implement
 void* memchr(const void* ptr, int value, size_t num) {
   return 0x00;
 }
 
-// TODO: FIXME: Implement
 int memcmp(const void* ptr1, const void* ptr2, size_t num) {
-  return 0x00;
+  unsigned char *a = (unsigned char*)ptr1;
+  unsigned char *b = (unsigned char*)ptr2;
+  for (size_t i = 0; i < num; i++) {
+    unsigned char v = a[i] - b[i];
+    if (v != 0) return v;
+  }
+  return 0;
 }
 
 void* memcpy(void* destination, const void* source, size_t num) {
@@ -22,7 +27,7 @@ void* memcpy(void* destination, const void* source, size_t num) {
   return destination;
 }
 
-// TODO: FIXME:
+// FIXME:
 void* memmove(void* destination, const void* source, size_t num) {
   return memcpy(destination, source, num);
 }
@@ -78,12 +83,10 @@ char* strncat(char* destination, const char* source, size_t num) {
   return strncpy((char*)destination+(strlen(destination)+1), source, (num > s_size) ? s_size : num);
 }
 
-// TODO: FIXME: Implement
 int strcmp(const char* str1, const char* str2) {
-  return NULL;
+  return memcmp((void*)str1, (void*)str2, strlen(str1));
 }
 
-// TODO: FIXME: Implement
 int strncmp(const char* str1, const char* str2, size_t num) {
-  return NULL;
+  return memcmp((void*)str1, (void*)str2, num);
 }

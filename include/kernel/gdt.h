@@ -36,6 +36,6 @@ struct gdt_tss_entry {
   uint8_t reserved;
 } __attribute__((packed));
 
-void gdt_init(uint32_t esp0);
+void gdt_init();
 
 #endif
