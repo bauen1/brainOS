@@ -44,10 +44,9 @@ debug: kernel/kernel.sym
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
 
 .PHONY: toolchain
-toolchain:
-	test $(cc) || make toolchain_real
+toolchain: $(cc)
 
-toolchain_real: toolchain/build.sh
+$(cc): toolchain/build.sh
 	@cd toolchain ; ./build.sh
 
 iso: $(iso)
