@@ -16,27 +16,38 @@ function get() {
 
 # Someone please help me with signature checking xD
 
-mkdir -p "$PWD/build/binutils"
-pushd .
-  cd "$PWD/build/binutils/"
-  get "binutils2.27" "http://ftp.gnu.org/gnu/binutils" "binutils-2.27.tar.gz" || exit 1
-  tar -xf "binutils-2.27.tar.gz" || exit 2
-  ./binutils-2.27/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
-  make || exit 4
-  make install || exit 5
-popd
+if [ -e "$PREFIX/bin/$TARGET-objcopy" ]
+then
+  echo "skipping binutils"
+else
+  mkdir -p "$PWD/build/binutils"
+  pushd .
+    cd "$PWD/build/binutils/"
+    get "binutils2.27" "http://ftp.gnu.org/gnu/binutils" "binutils-2.27.tar.gz" || exit 1
+    tar -xf "binutils-2.27.tar.gz" || exit 2
+    ./binutils-2.27/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
+    make || exit 4
+    make install || exit 5
+  popd
 
-mkdir -p "$PWD/build/gcc/"
-pushd .
-  cd "$PWD/build/gcc/"
-  get "gcc6.2.0" "http://mirrors.cicku.me/gnu/gcc/gcc-6.2.0/" "gcc-6.2.0.tar.gz" || exit 1
-  tar -xf "gcc-6.2.0.tar.gz" || exit 2
-  ./gcc-6.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers || exit 3
-  make all-gcc || exit 4
-  make all-target-libgcc || exit 5
-  make install-gcc || exit 6
-  make install-target-libgcc || exit 7
-popd
+fi
+
+if [ -e "$PREFIX/bin/$TARGET-gcc" ]
+then
+  echo "skipping gcc"
+else
+  mkdir -p "$PWD/build/gcc/"
+  pushd .
+    cd "$PWD/build/gcc/"
+    get "gcc6.2.0" "http://mirrors.cicku.me/gnu/gcc/gcc-6.2.0/" "gcc-6.2.0.tar.gz" || exit 1
+    tar -xf "gcc-6.2.0.tar.gz" || exit 2
+    ./gcc-6.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers || exit 3
+    make all-gcc || exit 4
+    make all-target-libgcc || exit 5
+    make install-gcc || exit 6
+    make install-target-libgcc || exit 7
+  popd
+fi
 
 #mkdir -p "$PWD/build/flex/"
 #pushd .
