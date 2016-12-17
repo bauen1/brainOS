@@ -48,7 +48,7 @@ int kmain (multiboot_t *mboot, uint32_t stack_size, uintptr_t esp) {
 
   for(;;){
     __asm__ __volatile__ ("hlt");
-    uint32_t t = get_time();
+    //uint32_t t = get_time();
     if ((t % 200) == 0) {
       //puthex("time:  ", t);
     }
