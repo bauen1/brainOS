@@ -10,3 +10,4 @@ script: make
 cache:
   - directories:
     - $HOME/toolchain/opt
+    - $HOME/toolchain/build

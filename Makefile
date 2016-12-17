@@ -10,7 +10,7 @@ c++=$(TOOLS)-g++
 objcopy=$(TOOLS)-objcopy
 ld=$(TOOLS)-ld
 nasm=nasm
-grub-mkrescue=/Users/jh/opt/cross/bin/grub-mkrescue #fixme
+grub-mkrescue ?=grub-mkrescue
 
 cflags  =-std=gnu99 -O2 -ffreestanding
 cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
@@ -44,7 +44,10 @@ debug: kernel/kernel.sym
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
 
 .PHONY: toolchain
-toolchain: toolchain/build.sh
+toolchain:
+	test $(cc) || make toolchain_real
+
+toolchain_real: toolchain/build.sh
 	@cd toolchain ; ./build.sh
 
 iso: $(iso)
