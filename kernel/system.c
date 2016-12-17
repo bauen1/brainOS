@@ -73,3 +73,8 @@ void puthex(char * name, uint32_t v) {
   putc(get_hex_low(v  >> 0));
   putc('\n');
 }
+
+void _puthex_8(uint8_t v) {
+  putc(get_hex_high(v));
+  putc(get_hex_low(v));
+}

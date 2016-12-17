@@ -12,5 +12,6 @@ void puts (char *str);
 char * itoa( int value, char * str, int base );
 
 void puthex(char * name, uint32_t v);
+void _puthex_8(uint8_t v);
 
 #endif

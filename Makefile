@@ -66,11 +66,11 @@ $(isodir)/boot/grub/grub.cfg: grub.cfg
 kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
-kernel/kernel.elf: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | kernel/*.h kernel/arch/$(TARGET)/*
-	$(cc) $(cflags) -nostdlib -o $@ -T $^
+kernel/kernel.elf: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h kernel/arch/$(TARGET)/*
+	$(cc) $(cflags) -I./include/kernel -nostdlib -o $@ -T $^
 
 kernel/%.o: kernel/%.c
-	$(cc) $(cflags) -nostdlib -c $< -o $@
+	$(cc) $(cflags) -I./include/kernel -nostdlib -c $< -o $@
 
 kernel/arch/$(TARGET)/boot.o: kernel/arch/$(TARGET)/boot.s kernel/arch/$(TARGET)/*.s
 	$(nasm) $(nasmflags) -felf $< -o $@
