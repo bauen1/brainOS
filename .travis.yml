@@ -1,9 +1,7 @@
 language: c
 
 install:
-  - sudo apt-get install gmp
-  - sudo apt-get install mpfr
-  - sudo apt-get install mpc
+  - sudo apt-get install libmpc-dev
   - make toolchain
 
 script: make
