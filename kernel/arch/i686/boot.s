@@ -14,7 +14,7 @@ section ._multiboot_header
 
 extern code, bss, end
 
-align 0x4
+align 4
 _multiboot_header:
                 dd MB_HEADER_MAGIC                ;
                 dd MB_HEADER_FLAGS                ;
