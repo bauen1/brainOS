@@ -3,4 +3,6 @@
 
 void keyboard_install();
 
+char getc();
+
 #endif

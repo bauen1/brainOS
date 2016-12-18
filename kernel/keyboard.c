@@ -1,5 +1,6 @@
 #include "keyboard.h"
 
+#include "ringbuffer.h"
 #include "system.h"
 #include "idt.h"
 
@@ -48,6 +49,24 @@ static unsigned char keyboard_map[128] = {
 
 };
 
+#define KEYBOARD_BUFFER_SIZE 512
+
+static uint8_t _keyboard_buffer[KEYBOARD_BUFFER_SIZE];
+static buffer_t keyboard_buffer = { .head = 0, .tail = 0, .size = KEYBOARD_BUFFER_SIZE, .buffer = _keyboard_buffer};
+
+
+char getc() {
+  char c;
+  for (;;) {
+    c = buffer_read(&keyboard_buffer);
+    if (c == -1) {
+      __asm__ __volatile__ ("hlt"); // wait a bit
+    } else {
+      return c;
+    }
+  }
+}
+
 static void keyboard_irq1(struct registers * registers) {
   uint8_t status;
   char keycode;
@@ -58,11 +77,11 @@ static void keyboard_irq1(struct registers * registers) {
     if (keycode < 0) {
       return;
     }
-    putc(keyboard_map[(uint8_t)keycode]);
+    buffer_write(&keyboard_buffer, (char)keyboard_map[(uint8_t)keycode]);
   }
   return;
 }
 
 void keyboard_install() {
-  set_irq_handler(1, (isr_t)&keyboard_irq1);
+  set_irq_handler(1, (isr_t)&keyboard_irq1); // install the keyboard irq handler
 }
