@@ -1,6 +1,6 @@
 # Makefile
 ROOT_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-PREFIX=$(ROOT_DIR)/toolchain/opt/cross
+PREFIX ?=$(ROOT_DIR)/toolchain/opt/cross
 TARGET ?=i686
 ARCH = $(TARGET)
 TOOLS=$(PREFIX)/bin/$(TARGET)-elf

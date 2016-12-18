@@ -6,7 +6,7 @@ install:
   - sudo apt-get install xorriso
   - ./toolchain/build-travis.sh
 
-script: make
+script: make all PREFIX="$HOME/toolchain/opt/cross"
 
 cache:
   directories:
