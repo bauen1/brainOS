@@ -13,6 +13,7 @@
 #include "time.h"
 #include "gdt.h"
 #include "keyboard.h"
+#include "pci.h"
 
 const char* exception[] = {
   "Division by Zero",
@@ -79,7 +80,8 @@ void kpanic (struct registers * registers) {
   }
 }
 
-int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
+int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
+  // TODO: implement printf, this is a mess
   tty_init();
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
@@ -88,16 +90,16 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
   tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
   putc('\n');
   puts("boot information:\n");
-  puthex("mboot->flags:       ", mboot->flags);
+  puthex("mboot->flags:       ", mbi->flags);
   puthex("stack size:         ", stack_size);
   puthex("esp:                ", esp);
-  puthex("modules count:      ", mboot->mods_count);
-  puthex("memmap size:        ", mboot->mmap_length);
+  puthex("modules count:      ", mbi->mods_count);
+  puthex("memmap size:        ", mbi->mmap_length);
   putc('\n');
 
   char buf[64];
   memset((void *)buf, 0, 20);
-  itoa(mboot->mem_upper - mboot->mem_lower, (char *)&buf, 10);
+  itoa(mbi->mem_upper - mbi->mem_lower, (char *)&buf, 10);
   puts("calculated memory (from mboot->mem_upper - mboot->mem_lower):    ");
   puts(&buf[0]);
   puts("kb\n");
@@ -112,8 +114,33 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
   for (int i = 0; i < 32; i++) {
     set_isr_handler(i, kpanic);
   }
-  putc(10/0);
+  putc('\n');
+  puts("Parsing Memory Map:\n");
+  multiboot_memory_map_t *mmap;
+  int region = 0;
+  for (mmap = (multiboot_memory_map_t *) mbi->mmap_addr;
+       (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
+       mmap = (multiboot_memory_map_t *) ((unsigned long) mmap
+                                + mmap->size + sizeof (mmap->size))) {
+    puts("Region 0x");
+    _puthex_8(region);
+    puts(": start: ");
+    _puthex_8(mmap->addr>>24);
+    _puthex_8(mmap->addr>>16);
+    _puthex_8(mmap->addr>>8);
+    _puthex_8(mmap->addr);
+    puts(" length: ");
+    _puthex_8(mmap->len>>24);
+    _puthex_8(mmap->len>>16);
+    _puthex_8(mmap->len>>8);
+    _puthex_8(mmap->len);
+    puts(" type: ");
+    _puthex_8(mmap->type);
+    putc('\n');
 
+    region++;
+}
+  //putc(10/0); // uncomment this to test a kernel panic
 
   __asm__ __volatile__("sti");  // enable interrupts
 
