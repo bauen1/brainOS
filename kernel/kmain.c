@@ -146,6 +146,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   char buffer[1024];
   while (true) {
+    putc('>');
     getsn(&buffer[0], 1024);
     puts("You typed: ");
     puts(buffer);

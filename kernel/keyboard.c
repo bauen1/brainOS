@@ -75,6 +75,12 @@ char * getsn(char * str, size_t max) {
     if (c == '\n') {
       str[i] = 0;
       return str;
+    } else if (c == '\b') {
+      if (i > 0) {
+        putc(' ');
+        putc('\b'); // clear the "delted" char on screen FIXME: hacky
+        i = i - 2; // also account for the i++ at the end of the loop
+      }
     } else {
       str[i] = c;
     }
