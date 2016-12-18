@@ -4,10 +4,10 @@ install:
   - sudo apt-get install libmpc-dev
   - sudo apt-get install nasm
   - sudo apt-get install xorriso
-  - make toolchain
+  - ./toolchain/build-travis.sh
 
 script: make
 
 cache:
   directories:
-    - $HOME/bauen1/brainOS/toolchain/opt
+    - $HOME/toolchain/opt
