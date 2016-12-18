@@ -27,7 +27,7 @@ void * memcpy(void * destination, const void * source, size_t num) {
   return destination;
 }
 
-// FIXME:
+// FIXME: this should work if destination and source overlap
 void * memmove(void * destination, const void * source, size_t num) {
   return memcpy(destination, source, num);
 }

@@ -14,8 +14,6 @@ uint8_t attribute = get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 
 uint8_t x, y;
 
-uint16_t blank;
-
 static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
   video_memory[y * VGA_WIDTH + x] = get_vga_v(c, attribute);
 }
@@ -24,13 +22,12 @@ void tty_init() {
   video_memory = (uint16_t*)0xb8000;
   x = 0;
   y = 0;
-  blank = get_vga_v(' ', attribute);
   tty_clear();
 }
 
 void tty_clear() {
   for (int i = 0; i < VGA_HEIGHT; i++) {
-    memsetw((short unsigned int *)(video_memory + i * VGA_WIDTH), blank, VGA_WIDTH);
+    memsetw((short unsigned int *)(video_memory + i * VGA_WIDTH), get_vga_v(' ', attribute), VGA_WIDTH);
   }
 }
 
@@ -40,7 +37,7 @@ static void scroll() {
     tmp = y - VGA_HEIGHT + 1;
     memcpy(video_memory, video_memory + (tmp * VGA_WIDTH), (VGA_HEIGHT - tmp) * VGA_WIDTH * 2);
 
-    memsetw((short unsigned int *)(video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH), blank, VGA_WIDTH);
+    memsetw((short unsigned int *)(video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH), get_vga_v(' ', attribute), VGA_WIDTH);
     y = VGA_HEIGHT - 1;
   }
 }

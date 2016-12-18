@@ -51,6 +51,8 @@ const char* exception[] = {
 
 void kpanic (struct registers * registers) {
   // TODO: Make this more epic, blue background etc everyone loves a good old BSOD
+  tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
+  tty_clear();
   puts("KERNEL PANIC:\n");
   puts((char *)exception[registers->isr_num]);
   putc('\n');
@@ -90,6 +92,7 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
   puthex("stack size:         ", stack_size);
   puthex("esp:                ", esp);
   puthex("modules count:      ", mboot->mods_count);
+  puthex("memmap size:        ", mboot->mmap_length);
   putc('\n');
 
   char buf[64];
@@ -110,6 +113,7 @@ int kmain (multiboot_t * mboot, uint32_t stack_size, uintptr_t esp) {
     set_isr_handler(i, kpanic);
   }
   putc(10/0);
+
 
   __asm__ __volatile__("sti");  // enable interrupts
 
