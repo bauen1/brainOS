@@ -1,6 +1,6 @@
 # brainOS [![Build Status](https://travis-ci.org/bauen1/brainOS.svg?branch=master)](https://travis-ci.org/bauen1/brainOS)
 
-[![Screen](https://raw.github.com/bauen1/brainOS/screenshot.png)](https://raw.github.com/bauen1/brainOS/screenshot.png)
+![Screen](/screenshot.png)
 
 # Dependencies
 * [Cross-compiling GCC](http://wiki.osdev.org/GCC_Cross-Compiler)
