@@ -10,4 +10,4 @@ script: make
 
 cache:
   directories:
-    - $HOME/toolchain/opt
+    - $HOME/bauen1/brainOS/toolchain/opt
