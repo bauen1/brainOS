@@ -1,6 +1,7 @@
 #include "keyboard.h"
 
 #include "ringbuffer.h"
+#include "string.h"
 #include "system.h"
 #include "idt.h"
 
@@ -67,6 +68,23 @@ char getc() {
   }
 }
 
+char * getsn(char * str, size_t max) {
+  size_t i = 0;
+  while (i < max) {
+    char c = getc();
+    if (c == '\n') {
+      str[i] = 0;
+      return str;
+    } else {
+      str[i] = c;
+    }
+
+    i++;
+  }
+
+  return NULL;
+}
+
 static void keyboard_irq1(struct registers * registers) {
   uint8_t status;
   char keycode;
@@ -77,7 +95,10 @@ static void keyboard_irq1(struct registers * registers) {
     if (keycode < 0) {
       return;
     }
-    buffer_write(&keyboard_buffer, (char)keyboard_map[(uint8_t)keycode]);
+
+    char c = (char)keyboard_map[(uint8_t)keycode];
+    buffer_write(&keyboard_buffer, c);
+    putc(c);
   }
   return;
 }
