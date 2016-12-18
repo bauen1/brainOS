@@ -9,6 +9,5 @@ install:
 script: make
 
 cache:
-  - directories:
+  directories:
     - $HOME/toolchain/opt
-    - $HOME/toolchain/build
