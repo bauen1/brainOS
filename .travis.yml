@@ -10,4 +10,4 @@ script: make all PREFIX="$HOME/opt/cross"
 
 cache:
   directories:
-    - $HOME/toolchain/opt
+    - $HOME/opt/cross/
