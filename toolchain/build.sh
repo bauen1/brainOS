@@ -1,6 +1,7 @@
 #!/bin/bash
 PREFIX="$PWD/opt/cross"
 TARGET=i686-elf
+PATCH_PATH="$PWD"
 export PATH="$PREFIX/bin:$PATH"
 
 mkdir -p "$PWD/build/"
@@ -49,7 +50,7 @@ else
     get "binutils2.24" "http://ftp.gnu.org/gnu/binutils" "binutils-2.24.tar.gz" || exit 1
     tar -xf "binutils-2.24.tar.gz" || exit 2
     echo "Applying patch for os-specific toolchain to binutils"
-    patch binutils-2.24/ < ../../binutils-2.24-brainos.patch
+    patch binutils-2.24/ < "$PATCH_PATH/binutils-2.24-brainos.patch"
     ./binutils-2.24/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
     make || exit 4
     make install || exit 5
@@ -67,7 +68,7 @@ else
     get "gcc6.2.0" "http://ftp.gnu.org/gnu/gcc/gcc-6.2.0" "gcc-6.2.0.tar.gz" || exit 1
     tar -xf "gcc-6.2.0.tar.gz" || exit 2
     echo "Applying patch for os-specific toolchain to gcc"
-    patch gcc-6.2.0/ < ../../gcc-6.2.0-brainos.patch
+    patch gcc-6.2.0/ < "$PATCH_PATH/gcc-6.2.0-brainos.patch"
     ./gcc-6.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers || exit 3
     make all-gcc || exit 4
     make all-target-libgcc || exit 5
