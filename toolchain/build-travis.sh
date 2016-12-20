@@ -1,7 +1,7 @@
 #!/bin/bash
 PREFIX="$HOME/opt/cross"
 TARGET=i686-elf
-PATCH_PATH="$PWD"
+PATCH_PATH="$PWD/toolchain"
 export PATH="$PREFIX/bin:$PATH"
 
 mkdir -p "$HOME/build/"
