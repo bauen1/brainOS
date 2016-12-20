@@ -6,6 +6,7 @@
 void keyboard_install();
 
 char getc();
+char * gets(char * str);
 char * getsn(char * str, size_t max);
 
 #endif

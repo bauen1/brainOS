@@ -16,6 +16,29 @@ function get() {
 
 # Someone please help me with signature checking xD
 
+mkdir -p "$HOME/build/automake"
+pushd .
+  cd "$HOME/build/automake"
+  get "automake-1.11.1" "http://ftp.gnu.org/gnu/automake" "automake-1.11.1.tar.bz2" || exit 1
+  tar -xf "automake-1.11.1.tar.bz2" || exit 2
+  ./automake-1.11.1/configure --prefix="$PREFIX" || exit 3
+  make || exit 4
+  make install || exit 5
+popd
+
+mkdir -p "$HOME/build/autoconf"
+pushd .
+  cd "$HOME/build/autoconf"
+  get "autoconf-2.64" "http://ftp.gnu.org/gnu/autoconf" "autoconf-2.64.tar.bz2" || exit 1
+  tar -xf "autoconf-1.11.1.tar.bz2" || exit 2
+  ./autoconf-2.64/configure --prefix="$PREFIX" || exit 3
+  make || exit 4
+  make install || exit 5
+popd
+
+export PATH_OLD=$PATH
+export PATH="$HOME/opt/cross/bin:$PATH"
+
 if [ -e "$PREFIX/bin/$TARGET-objcopy" ]
 then
   echo "skipping binutils"
@@ -23,9 +46,11 @@ else
   mkdir -p "$HOME/build/binutils"
   pushd .
     cd "$HOME/build/binutils/"
-    get "binutils2.27" "http://ftp.gnu.org/gnu/binutils" "binutils-2.27.tar.gz" || exit 1
+    get "binutils2.24" "http://ftp.gnu.org/gnu/binutils" "binutils-2.24.tar.gz" || exit 1
     tar -xf "binutils-2.27.tar.gz" || exit 2
-    ./binutils-2.27/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
+    echo "Applying patch for os-specific toolchain to binutils"
+    patch binutils-2.24/ < ../../binutils-2.24-brainos.patch
+    ./binutils-2.24/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
     make || exit 4
     make install || exit 5
   popd
@@ -39,8 +64,10 @@ else
   mkdir -p "$HOME/build/gcc/"
   pushd .
     cd "$HOME/build/gcc/"
-    get "gcc6.2.0" "http://mirrors.cicku.me/gnu/gcc/gcc-6.2.0/" "gcc-6.2.0.tar.gz" || exit 1
+    get "gcc6.2.0" "http://ftp.gnu.org/gnu/gcc/gcc-6.2.0" "gcc-6.2.0.tar.gz" || exit 1
     tar -xf "gcc-6.2.0.tar.gz" || exit 2
+    echo "Applying patch for os-specific toolchain to gcc"
+    patch gcc-6.2.0/ < ../../gcc-6.2.0-brainos.patch
     ./gcc-6.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers || exit 3
     make all-gcc || exit 4
     make all-target-libgcc || exit 5

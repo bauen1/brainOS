@@ -4,6 +4,7 @@
 #include "string.h"
 #include "system.h"
 #include "idt.h"
+#include "tty.h"
 
 static unsigned char keyboard_map[128] = {
   0, 27,
@@ -71,24 +72,33 @@ char getc() {
 char * getsn(char * str, size_t max) {
   size_t i = 0;
   while (i < max) {
+    uint8_t px = tty_get_cursor_x();
     char c = getc();
     if (c == '\n') {
       str[i] = 0;
       return str;
-    } else if (c == '\b') {
+    } else if (c == '\b') { // FIXME: hacky
       if (i > 0) {
         putc(' ');
         putc('\b'); // clear the "delted" char on screen FIXME: hacky
-        i = i - 2; // also account for the i++ at the end of the loop
+        i = i - 1; // also account for the i++ at the end of the loop
+      } else {
+        uint8_t x = tty_get_cursor_x();
+        if (x < px) {
+          tty_set_cursor_x(px);
+        }
       }
     } else {
       str[i] = c;
+      i++;
     }
-
-    i++;
   }
 
   return NULL;
+}
+
+char * gets(char * str) {
+  return getsn(str, SIZE_MAX);
 }
 
 static void keyboard_irq1(struct registers * registers) {
