@@ -47,7 +47,7 @@ else
   pushd .
     cd "$PWD/build/binutils/"
     get "binutils2.24" "http://ftp.gnu.org/gnu/binutils" "binutils-2.24.tar.gz" || exit 1
-    tar -xf "binutils-2.27.tar.gz" || exit 2
+    tar -xf "binutils-2.24.tar.gz" || exit 2
     echo "Applying patch for os-specific toolchain to binutils"
     patch binutils-2.24/ < ../../binutils-2.24-brainos.patch
     ./binutils-2.24/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror || exit 3
