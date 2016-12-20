@@ -16,28 +16,28 @@ function get() {
 
 # Someone please help me with signature checking xD
 
-mkdir -p "$PWD/build/automake"
-pushd .
-  cd "$PWD/build/automake"
-  get "automake-1.11.1" "http://ftp.gnu.org/gnu/automake" "automake-1.11.1.tar.bz2" || exit 1
-  tar -xf "automake-1.11.1.tar.bz2" || exit 2
-  ./automake-1.11.1/configure --prefix="$PREFIX" || exit 3
-  make || exit 4
-  make install || exit 5
-popd
+#mkdir -p "$PWD/build/automake"
+#pushd .
+#  cd "$PWD/build/automake"
+#  get "automake-1.11.1" "http://ftp.gnu.org/gnu/automake" "automake-1.11.1.tar.bz2" || exit 1
+#  tar -xf "automake-1.11.1.tar.bz2" || exit 2
+#  ./automake-1.11.1/configure --prefix="$PREFIX" || exit 3
+#  make || exit 4
+#  make install || exit 5
+#popd
 
-mkdir -p "$PWD/build/autoconf"
-pushd .
-  cd "$PWD/build/autoconf"
-  get "autoconf-2.64" "http://ftp.gnu.org/gnu/autoconf" "autoconf-2.64.tar.bz2" || exit 1
-  tar -xf "autoconf-1.11.1.tar.bz2" || exit 2
-  ./autoconf-2.64/configure --prefix="$PREFIX" || exit 3
-  make || exit 4
-  make install || exit 5
-popd
-
-export PATH_OLD=$PATH
-export PATH="$PWD/opt/cross/bin:$PATH"
+#mkdir -p "$PWD/build/autoconf"
+#pushd .
+#  cd "$PWD/build/autoconf"
+#  get "autoconf-2.64" "http://ftp.gnu.org/gnu/autoconf" "autoconf-2.64.tar.bz2" || exit 1
+#  tar -xf "autoconf-1.11.1.tar.bz2" || exit 2
+#  ./autoconf-2.64/configure --prefix="$PREFIX" || exit 3
+#  make || exit 4
+#  make install || exit 5
+#popd
+#
+#export PATH_OLD=$PATH
+#export PATH="$PWD/opt/cross/bin:$PATH"
 
 if [ -e "$PREFIX/bin/$TARGET-objcopy" ]
 then
