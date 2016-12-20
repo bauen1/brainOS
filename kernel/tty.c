@@ -93,6 +93,22 @@ void tty_putc(char c) {
   put_v_at(buf[1], attribute, 79, 0);
 }
 
+uint8_t tty_get_cursor_x() {
+  return x;
+}
+
+uint8_t tty_get_cursor_y() {
+  return y;
+}
+
+void tty_set_cursor_x(uint8_t _x) {
+  x = _x;
+}
+
+void tty_set_cursor_y(uint8_t _y) {
+  y = _y;
+}
+
 void tty_set_attribute(uint8_t v) {
   attribute = v;
 }
