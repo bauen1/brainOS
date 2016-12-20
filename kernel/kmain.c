@@ -99,8 +99,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   char buf[64];
   memset((void *)buf, 0, 20);
-  itoa(mbi->mem_upper - mbi->mem_lower, (char *)&buf, 10);
-  puts("calculated memory (from mboot->mem_upper - mboot->mem_lower):    ");
+  itoa(mbi->mem_upper + mbi->mem_lower, (char *)&buf, 10);
+  puts("calculated memory (from mboot->mem_upper + mboot->mem_lower):    ");
   puts(&buf[0]);
   puts("kb\n");
 
