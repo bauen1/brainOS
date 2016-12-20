@@ -141,7 +141,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     region++;
 }
   //putc(10/0); // uncomment this to test a kernel panic
-  //puts(*((uint32_t *)mboot->mods_addr));
+  //puts(*((uint32_t *)mbi->mods_addr));
 
   __asm__ __volatile__("sti");  // enable interrupts
 
@@ -152,6 +152,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     puts("You typed: ");
     puts(buffer);
     puts("\n");
+    if(strncmp(buffer,"modules", 7) == 0) {
+      puthex("number of modules: ", (uint32_t)mbi->mods_count);
+    }
   }
 
   return 1;
