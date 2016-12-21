@@ -14,6 +14,7 @@
 #include "gdt.h"
 #include "keyboard.h"
 #include "pci.h"
+#include "pmm.h"
 
 const char* exception[] = {
   "Division by Zero",
@@ -49,6 +50,9 @@ const char* exception[] = {
   "Reserved",
   "Reserved",
 };
+
+extern uint32_t end;
+extern uint32_t start;
 
 void kpanic (struct registers * registers) {
   // TODO: Make this more epic, blue background etc everyone loves a good old BSOD
@@ -108,12 +112,14 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   idt_install();
 
   keyboard_install();
+  pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
   //time_init();
   //pci_install();
 
   for (int i = 0; i < 32; i++) {
     set_isr_handler(i, kpanic);
   }
+
   putc('\n');
   puts("Parsing Memory Map:\n");
   multiboot_memory_map_t *mmap;
@@ -138,10 +144,34 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     _puthex_8(mmap->type);
     putc('\n');
 
+    if (mmap->type == 1) {
+      pmm_free_region(mmap->addr, mmap->len);
+    } else {
+      pmm_alloc_region(mmap->addr, mmap->len);
+    }
+
     region++;
-}
-  //putc(10/0); // uncomment this to test a kernel panic
-  //puts(*((uint32_t *)mbi->mods_addr));
+  }
+  uint32_t kernel_length = (((uint32_t)&end) - ((uint32_t)&start));
+
+  pmm_alloc_region((uint32_t *)0x00000000, 0x00100000); // memory below 1 mb is for special purpose (86vm mode)
+  pmm_alloc_region(&start, kernel_length + PMM_BLOCK_SIZE); // round up to the next page/block
+
+  // Physical Memory Manager Test:
+  puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
+
+  void * p = pmm_alloc_block();
+  puthex("p:   ", (uint32_t)p);
+  void * p2 = (uint32_t *)pmm_alloc_block();
+  puthex("p2:  ", (uint32_t)p2);
+  puts("reallocating p\n");
+  pmm_free_block(p);
+  p = pmm_alloc_block();
+  puthex("p3:  ", (uint32_t)p);
+  pmm_free_block(p);
+  pmm_free_block(p2);
+  puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
+
 
   __asm__ __volatile__("sti");  // enable interrupts
 
