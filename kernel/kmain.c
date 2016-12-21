@@ -152,12 +152,15 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
     region++;
   }
+  // The length of the kernel from start to end
   uint32_t kernel_length = (((uint32_t)&end) - ((uint32_t)&start));
 
-  pmm_alloc_region((uint32_t *)0x00000000, 0x00100000); // memory below 1 mb is for special purpose (86vm mode)
-  pmm_alloc_region(&start, kernel_length + PMM_BLOCK_SIZE); // round up to the next page/block
+  // memory below 1 mb is for special purpose (virtual 8086 mode)
+  pmm_alloc_region(0x00000000, 0x00100000);
+  pmm_alloc_region((uint32_t)&start, kernel_length + PMM_BLOCK_SIZE); // round up to the next page/block
 
   // Physical Memory Manager Test:
+  // pmm_used_blocks should be the same on both prints
   puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
 
   void * p = pmm_alloc_block();
