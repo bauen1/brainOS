@@ -114,7 +114,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   keyboard_install();
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
-  //time_init();
+  time_init(1); // setup the clock to fire every 18.222 times per second (default)
   //pci_install();
 
   for (int i = 0; i < 32; i++) {
@@ -193,6 +193,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     puts("\n");
     if (strncmp(buffer, "modules", 7) == 0) {
       puthex("number of modules: ", (uint32_t)mbi->mods_count);
+    } else if (strncmp(buffer, "wait", 4) == 0) {
+      puts("Waiting for 10 seconds\n");
+      _wait(2 * 18.22 * 10);
     }
   }
 
