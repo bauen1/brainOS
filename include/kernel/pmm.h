@@ -9,6 +9,9 @@
 
 void pmm_free_region(uint32_t base, size_t size);
 void pmm_alloc_region(uint32_t base, size_t size);
+
+void * pmm_alloc_blocks(size_t size);
+void pmm_free_blocks(void * p, size_t size);
 void * pmm_alloc_block();
 void pmm_free_block(void * p);
 

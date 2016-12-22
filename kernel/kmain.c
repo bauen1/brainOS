@@ -168,14 +168,17 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   void * p = pmm_alloc_block();
   puthex("p:   ", (uint32_t)p);
-  void * p2 = (uint32_t *)pmm_alloc_block();
+  void * p2 = pmm_alloc_blocks(2);
   puthex("p2:  ", (uint32_t)p2);
+  void * p3 = pmm_alloc_block();
+  puthex("p3:  ", (uint32_t)p2);
+  pmm_free_block(p3);
   puts("reallocating p\n");
   pmm_free_block(p);
   p = pmm_alloc_block();
   puthex("p3:  ", (uint32_t)p);
   pmm_free_block(p);
-  pmm_free_block(p2);
+  pmm_free_blocks(p2, 2);
   puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
 
 
@@ -188,7 +191,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     puts("You typed: ");
     puts(buffer);
     puts("\n");
-    if(strncmp(buffer,"modules", 7) == 0) {
+    if (strncmp(buffer, "modules", 7) == 0) {
       puthex("number of modules: ", (uint32_t)mbi->mods_count);
     }
   }
