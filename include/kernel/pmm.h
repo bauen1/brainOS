@@ -11,6 +11,7 @@ void pmm_free_region(uint32_t base, size_t size);
 void pmm_alloc_region(uint32_t base, size_t size);
 void * pmm_alloc_block();
 void pmm_free_block(void * p);
+
 void pmm_init(size_t memory_size, uint32_t mem_map);
 
 uint32_t pmm_get_pmm_used_blocks();

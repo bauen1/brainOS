@@ -86,6 +86,7 @@ void kpanic (struct registers * registers) {
 
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // TODO: implement printf, this is a mess
+  // TODO: really need to do the above
   tty_init();
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
@@ -157,6 +158,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // memory below 1 mb is for special purpose (virtual 8086 mode)
   pmm_alloc_region(0x00000000, 0x00100000);
+
+  // lets just say we don't want to "allocate" the space where our code lives
   pmm_alloc_region((uint32_t)&start, kernel_length + PMM_BLOCK_SIZE); // round up to the next page/block
 
   // Physical Memory Manager Test:

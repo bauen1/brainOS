@@ -81,10 +81,6 @@ void * pmm_alloc_block() {
 
 void pmm_free_block(void * p) {
   uint32_t base_aligned = ((uint32_t)p) / PMM_BLOCK_ALIGN;
-  //puts("-----------------------------\n");
-  //puthex("base_aligned:   ", base_aligned);
-  //puthex("p:              ", p);
-  //puts("-----------------------------\n");
 
   pmm_mem_unset(base_aligned);
   pmm_used_blocks--;

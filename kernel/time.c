@@ -1,3 +1,4 @@
+// TODO: rename to pit.*
 #include "time.h"
 
 #include "system.h"
@@ -21,8 +22,8 @@ void time_init() {
 
   uint32_t divisor = PIT_CLOCK_FREQUENCY / 50;//= PIT_CLOCK_FREQUENCY / 1000000; // 1Hz
 
-  outportb(0x40, (uint8_t)(divisor & 0xF));
-  outportb(0x40, (uint8_t)((divisor >> 8) & 0xF));
+  outportb(0x40, (uint8_t)(divisor & 0xFF));
+  outportb(0x40, (uint8_t)((divisor >> 8) & 0xFF));
 }
 
 uint32_t get_time() {

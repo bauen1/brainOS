@@ -41,6 +41,7 @@ void idt_install() {
   outportb(PIC2_DATA, 0x00); // enable interrupts 8-15
   //
 
+  // setup all the gates (TODO: setup isr 48-256 if i'm bored)
   idt_set_gate( 0, (uint32_t)isr0 , 0x08, 0x8E);
   idt_set_gate( 1, (uint32_t)isr1 , 0x08, 0x8E);
   idt_set_gate( 2, (uint32_t)isr2 , 0x08, 0x8E);
@@ -91,18 +92,10 @@ void idt_install() {
   idt_set_gate(47, (uint32_t)irq14, 0x08, 0x8E);
   idt_set_gate(48, (uint32_t)irq15, 0x08, 0x8E);
 
-  //idt_set_gate(0x80, (uint32_t)isr0, 0x08, 0x8E);
-
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;
 
-  //puthex("(uint32_t)&idt_p:      ", (uint32_t)&idt_p);
-  //puthex("(uint32_t)idt_p.limit: ", (uint32_t)idt_p.limit);
-  //puthex("(uint32_t)idt_p.base:  ", (uint32_t)idt_p.base);
-
-
   idt_flush((uint32_t)&idt_p);
-  //putc(10/0);
 }
 
 isr_t isr_handlers[256];
@@ -117,7 +110,7 @@ void isr_handler(struct registers * registers) {
   }
 }
 
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27234
+// TODO: maybe merge this into isr_handler ?
 void irq_handler(struct registers * registers) {
   if (registers->isr_num >= 40) { // in this case irq num
     outportb(PIC2_COMMAND, PIC_EOI);
