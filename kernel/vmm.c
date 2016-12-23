@@ -1,4 +1,5 @@
 #include "vmm.h"
+#include "system.h"
 
 extern void load_page_directory(uint32_t page_directory);
 extern void enable_paging();
@@ -23,6 +24,6 @@ void vmm_init() { // Identity map 4GBs
   }
 
   puthex("page_directory: ", page_directory);
-  load_page_directory(page_directory);
+  load_page_directory((uint32_t *)page_directory);
   enable_paging();
 }
