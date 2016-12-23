@@ -1,11 +1,10 @@
-# brainOS [![Build Status](https://travis-ci.org/bauen1/brainOS.svg?branch=master)](https://travis-ci.org/bauen1/brainOS)
+# brainOS [![Build Status](https://travis-ci.org/bauen1/brainOS.svg?branch=master)](https://travis-ci.org/bauen1/brainOS) [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/mit-license.php)   
 
 ![Screen](/screenshot.png)
 
 # Dependencies
-* [Cross-compiling GCC](http://wiki.osdev.org/GCC_Cross-Compiler)
+* NASM use your favorite package manager to get it
 * [grub-mkrescue (linux has it preinstalled this is for macOS users)](http://wiki.osdev.org/GRUB_2#Installing_GRUB2_on_Mac_OS_X)
-* Nasm, install it using `sudo apt-get install nasm` if your on linux
 
 # Running
 

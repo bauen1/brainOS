@@ -1,31 +1,31 @@
 #include "cpu.h"
 
-inline uint8_t inportb (uint16_t port) {
+uint8_t inportb (uint16_t port) {
   unsigned char rv;
   __asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (port));
   return rv;
 }
 
-inline void outportb (uint16_t port, uint8_t data) {
+void outportb (uint16_t port, uint8_t data) {
   __asm__ __volatile__ ("outb %1, %0" : : "dN" (port), "a" (data));
 }
 
-inline uint16_t inports (uint16_t port) {
+uint16_t inports (uint16_t port) {
   unsigned short rv;
   __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (port));
   return rv;
 }
 
-inline void outports (uint16_t port, uint16_t data) {
+void outports (uint16_t port, uint16_t data) {
   __asm__ __volatile__ ("outw %1, %0" : : "dN" (port), "a" (data));
 }
 
-inline uint32_t inportl (uint16_t port) {
+uint32_t inportl (uint16_t port) {
   uint32_t rv;
   __asm__ __volatile__ ("inl %1, %0" : "=a" (rv) : "dN" (port));
   return rv;
 }
 
-inline void outportl (uint16_t port, uint32_t data) {
+void outportl (uint16_t port, uint32_t data) {
   __asm__ __volatile__ ("outl %1, %0" : : "dN" (port), "a" (data));
 }

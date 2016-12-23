@@ -6,7 +6,7 @@ MB_MEMORY_INFO	equ 1<<1 ; request mem_info struct
 MB_HEADER_FLAGS equ MB_PAGE_ALIGN | MB_MEMORY_INFO
 MB_CHECKSUM equ -(MB_HEADER_MAGIC + MB_HEADER_FLAGS)
 
-STACK_SIZE equ 16384 ; 16kb (gotta think big)
+STACK_SIZE equ 32768 ; 32kb (gotta think big)
 
 bits 32
 
@@ -55,6 +55,7 @@ _boot:
 %include "kernel/arch/i686/gdt-flush.s"
 %include "kernel/arch/i686/idt-flush.s"
 %include "kernel/arch/i686/interrupts.s"
+%include "kernel/arch/i686/paging.s"
 
 section .bss
 align 16

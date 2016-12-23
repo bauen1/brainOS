@@ -15,6 +15,7 @@
 #include "keyboard.h"
 #include "pci.h"
 #include "pmm.h"
+#include "vmm.h"
 
 const char* exception[] = {
   "Division by Zero",
@@ -181,8 +182,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   pmm_free_blocks(p2, 2);
   puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
 
-
   __asm__ __volatile__("sti");  // enable interrupts
+
+  vmm_init();
 
   char buffer[1024];
   while (true) {
