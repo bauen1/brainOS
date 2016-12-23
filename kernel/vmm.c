@@ -3,6 +3,9 @@
 extern void load_page_directory(uint32_t page_directory);
 extern void enable_paging();
 
+uint32_t page_directory[1024] __attribute__((aligned(4096)));
+uint32_t page_tables[1024][1024] __attribute__((aligned(4096)));
+
 void vmm_init() { // Identity map 4GBs
 
   for(int i = 0; i < 1024; i++)
