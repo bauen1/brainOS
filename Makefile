@@ -20,7 +20,7 @@ nasmflags=-w+orphan-labels
 isodir=./iso
 iso=image.iso
 
-qemuflags ?= -drive file=$(iso),format=raw -s -net none -m 32M
+qemuflags ?= -drive file=$(iso),format=raw -s -net none -m 32M -d guest_errors
 
 .DEFAULT: all
 .PHONY: all

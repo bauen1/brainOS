@@ -14,23 +14,23 @@ SECTIONS
         *(.rodata)
       }
 
-      .data BLOCK(4K) : ALIGN(4K)
+      .data BLOCK(4K) : ALIGN(4096)
       {
         data = .;
         *(.data)
       }
 
-      .bss BLOCK(4K) : ALIGN(4K)
+      .bss BLOCK(4K) : ALIGN(4096)
       {
         bss = .;
         *(COMMON)
         *(.bss)
       }
 
+      end = .; _end = .; __end = .;
+
       /DISCARD/ :
       {
         *(.comment)
       }
-
-      end = .;
 }
