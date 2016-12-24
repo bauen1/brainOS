@@ -116,7 +116,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   keyboard_install();
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
   time_init(1); // setup the clock to fire every 18.222 times per second (default)
-  //pci_install();
+  pci_install();
 
   for (int i = 0; i < 32; i++) {
     set_isr_handler(i, kpanic);
@@ -198,6 +198,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     } else if (strncmp(buffer, "wait", 4) == 0) {
       puts("Waiting for 10 seconds\n");
       _wait(2 * 18.22 * 10);
+    } else if (strncmp(buffer, "listpci", 7) == 0) {
+      pci_list();
     }
   }
 

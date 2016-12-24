@@ -66,7 +66,7 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
   //uint8_t rev_id = (uint8_t)((head_field & 0xFF) >> 0);
 
   uint8_t header_type = pci_read_config_header_type(bus, slot);
-  //uint8_t int_line = pci_read_config(bus, slot, 0, 0x3C, 1);
+  uint8_t int_line = pci_read_config(bus, slot, 0, 0x3C, 1);
 
   puts("- ");
   size_t name_len = strlen((char*)classcode_lookup[classcode]);
@@ -78,23 +78,22 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     putc('-');
   }
   puts("\n");
-  puts("vendorid:    ");
-  puts("0x");_puthex_8(vendorid >> 8);_puthex_8(vendorid);putc('\n');
-  puts("deviceid:    ");
+  puts("vendorid:deviceid:    ");
+  puts("0x");_puthex_8(vendorid >> 8);_puthex_8(vendorid);putc(':');
   puts("0x");_puthex_8(deviceid >> 8);_puthex_8(deviceid);putc('\n');
-  puts("subclass:    ");
+  puts("subclass:             ");
   puts("0x");_puthex_8(subclass );putc('\n');
-  puts("Prog IF:     ");
+  puts("Prog IF:              ");
   puts("0x");_puthex_8(prog_if  );putc('\n');
-  puts("header_type: ");
+  puts("header_type:          ");
   puts("0x");_puthex_8(header_type);
   puts("\t");
   puts(((header_type & 0x7F) == 0x00) ? "general" : "");
   puts("\t");
   puts((header_type & 0x80) ? "multifunction" : "");
   putc('\n');
-  //puts("int_line:    ");
-  //puts("0x");_puthex_8(int_line );putc('\n');
+  puts("int_line:    ");
+  puts("0x");_puthex_8(int_line );putc('\n');
 
   /*
   if (header_type & 0x80) {
@@ -108,28 +107,15 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     }
   }*/
   if ((header_type & 0x7F) == 0x00) {
-    //puts("bar0: ");
-    uint32_t bar0 = pci_read_config(bus, slot, 0, 0x10, 4);
-    /*puts("bar0(");
-    _puthex_8(bar0 & 0x0F);
-    puts("): ");
-    _puthex_8(bar0 >> 24);
-    _puthex_8(bar0 >> 16);
-    _puthex_8(bar0 >> 8);
-    _puthex_8(0x00);
-    puts("\n");*/
-
-    puthex("bar0: ", bar0 & 0xFFFFFFF0);
-    puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFF0);
-    //puthex("bar2: ", pci_read_config(bus, slot, 0, 0x18, 4));
-    //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4));
-    //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4));
-    //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4));
+    //puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
+    //puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFF0);
+    //puthex("bar2: ", pci_read_config(bus, slot, 0, 0x18, 4) & 0xFFFFFFF0);
+    //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4) & 0xFFFFFFF0);
+    //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4) & 0xFFFFFFF0);
+    //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFF0);
   }
 
 }
-
-
 
 void pci_bruteforce() {
   for (int bus = 0; bus < 256; bus++) { // all the busses we need
@@ -139,8 +125,8 @@ void pci_bruteforce() {
   }
 }
 
-void pci_install() {
-  puts("Listing PCI devices:\n");
+void pci_list() {
   pci_bruteforce();
-  puts("Finished\n");
 }
+
+void pci_install() {}

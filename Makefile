@@ -20,7 +20,7 @@ nasmflags=-w+orphan-labels
 isodir=./iso
 iso=image.iso
 
-qemuflags ?= -drive file=$(iso),format=raw -s -net none -m 32M -d guest_errors
+qemuflags = -drive file=$(iso),format=raw -s -net nic,model=e1000 -m 32M -d guest_errors -name "brainOS development vm"
 
 .DEFAULT: all
 .PHONY: all
@@ -37,7 +37,7 @@ clean:
 
 .PHONY: qemu
 qemu: $(iso) kernel/kernel.sym
-	qemu-system-x86_64 $(qemuflags)
+	qemu-system-x86_64 $(qemuflags) $(user_qemuflags)
 
 .PHONY: debug
 debug: kernel/kernel.sym
