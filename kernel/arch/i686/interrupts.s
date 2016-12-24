@@ -1,40 +1,28 @@
 extern isr_handler
 extern irq_handler
 
-%macro push_segments 0
+isr_common_stub:
+              pushad
+
               push ds
               push es
               push fs
               push gs
-%endmacro
 
-%macro pop_segments 0
-              pop gs
-              pop fs
-              pop es
-              pop ds
-%endmacro
-
-%macro set_segments 1
-              mov ax, %1
+              mov ax, 0x10        ; kernel data segment
               mov ds, ax
               mov es, ax
               mov fs, ax
               mov gs, ax
-%endmacro
 
-isr_common_stub:
-              pushad
-
-              push_segments
-
-              set_segments 0x10        ; kernel data segment
-
-              push esp
-              call isr_handler
+              push esp            ; push a the stack pointer
+              call isr_handler    ; so we can use it as a pointer to a struct in here
               add esp, 4
 
-              pop_segments
+              pop gs
+              pop fs
+              pop es
+              pop ds
 
               popad
 
