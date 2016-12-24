@@ -295,8 +295,7 @@ irq14:        cli
               push byte 46
               jmp irq_common_stub
 global irq15
-irq15:        jmp $
-              cli
+irq15:        cli
               push byte 0
               push byte 47
               jmp irq_common_stub
