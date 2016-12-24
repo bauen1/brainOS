@@ -75,22 +75,26 @@ void idt_install() {
   idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
 
-  idt_set_gate(32, (uint32_t)irq0 , 0x08, 0x8E);
-  idt_set_gate(33, (uint32_t)irq1 , 0x08, 0x8E);
-  idt_set_gate(34, (uint32_t)irq2 , 0x08, 0x8E);
-  idt_set_gate(35, (uint32_t)irq3 , 0x08, 0x8E);
-  idt_set_gate(36, (uint32_t)irq4 , 0x08, 0x8E);
-  idt_set_gate(37, (uint32_t)irq5 , 0x08, 0x8E);
-  idt_set_gate(38, (uint32_t)irq6 , 0x08, 0x8E);
-  idt_set_gate(39, (uint32_t)irq7 , 0x08, 0x8E);
-  idt_set_gate(40, (uint32_t)irq8 , 0x08, 0x8E);
-  idt_set_gate(41, (uint32_t)irq9 , 0x08, 0x8E);
-  idt_set_gate(43, (uint32_t)irq10, 0x08, 0x8E);
-  idt_set_gate(44, (uint32_t)irq11, 0x08, 0x8E);
-  idt_set_gate(45, (uint32_t)irq12, 0x08, 0x8E);
-  idt_set_gate(46, (uint32_t)irq13, 0x08, 0x8E);
-  idt_set_gate(47, (uint32_t)irq14, 0x08, 0x8E);
-  idt_set_gate(48, (uint32_t)irq15, 0x08, 0x8E);
+  // IRQs
+  idt_set_gate(32, (uint32_t)isr32, 0x08, 0x8E);
+  idt_set_gate(33, (uint32_t)isr33, 0x08, 0x8E);
+  idt_set_gate(34, (uint32_t)isr34, 0x08, 0x8E);
+  idt_set_gate(35, (uint32_t)isr35, 0x08, 0x8E);
+  idt_set_gate(36, (uint32_t)isr36, 0x08, 0x8E);
+  idt_set_gate(37, (uint32_t)isr37, 0x08, 0x8E);
+  idt_set_gate(38, (uint32_t)isr38, 0x08, 0x8E);
+  idt_set_gate(39, (uint32_t)isr39, 0x08, 0x8E);
+  idt_set_gate(40, (uint32_t)isr40, 0x08, 0x8E);
+  idt_set_gate(41, (uint32_t)isr41, 0x08, 0x8E);
+  idt_set_gate(43, (uint32_t)isr42, 0x08, 0x8E);
+  idt_set_gate(44, (uint32_t)isr44, 0x08, 0x8E);
+  idt_set_gate(45, (uint32_t)isr45, 0x08, 0x8E);
+  idt_set_gate(46, (uint32_t)isr46, 0x08, 0x8E);
+  idt_set_gate(47, (uint32_t)isr47, 0x08, 0x8E);
+  idt_set_gate(48, (uint32_t)isr48, 0x08, 0x8E);
+
+  // syscall entry point
+  idt_set_gate(49, (uint32_t)isr49, 0x08, 0x8E); // FIXME: we need to change the flags of this one
 
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;
@@ -105,19 +109,18 @@ void set_isr_handler(uint8_t i, isr_t handler) {
 }
 
 void isr_handler(struct registers * registers) {
-  if (isr_handlers[registers->isr_num] != 0) {
-    isr_handlers[registers->isr_num](registers);
+  if ((registers->isr_num >= 32) && (registers->isr_num <= 48)) { // IRQ
+    if (registers->isr_num >= 40) { // IRQ originated from the slave PIC
+      outportb(PIC2_COMMAND, PIC_EOI);
+    }
+
+    outportb(PIC1_COMMAND, PIC_EOI);
+
+  } else {                        // ISR / syscall
+
   }
-}
 
-// TODO: maybe merge this into isr_handler ?
-void irq_handler(struct registers * registers) {
-  if (registers->isr_num >= 40) { // in this case irq num
-    outportb(PIC2_COMMAND, PIC_EOI);
-  }
-
-  outportb(PIC1_COMMAND, PIC_EOI);
-
+  // Call the handler if any
   if (isr_handlers[registers->isr_num] != 0) {
     isr_handlers[registers->isr_num](registers);
   }
