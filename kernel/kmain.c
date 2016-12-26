@@ -88,6 +88,9 @@ void kpanic (struct registers * registers) {
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // TODO: implement printf, this is a mess
   // TODO: really need to do the above
+  gdt_init();
+  idt_install();
+
   tty_init();
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
@@ -109,9 +112,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   puts("calculated memory (from mboot->mem_upper + mboot->mem_lower):    ");
   puts(&buf[0]);
   puts("kb\n");
-
-  gdt_init();
-  idt_install();
 
   keyboard_install();
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);

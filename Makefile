@@ -1,6 +1,4 @@
 # Makefile
-ROOT_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-PREFIX ?=$(ROOT_DIR)/toolchain/opt/cross
 TARGET ?=i686
 ARCH = $(TARGET)
 TOOLS=$(PREFIX)/bin/$(TARGET)-elf
@@ -9,6 +7,8 @@ cc=$(TOOLS)-gcc
 c++=$(TOOLS)-g++
 objcopy=$(TOOLS)-objcopy
 ld=$(TOOLS)-ld
+root_dir :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+prefix ?=$(root_dir)/toolchain/opt/cross
 nasm=nasm
 grub-mkrescue ?=grub-mkrescue
 
@@ -77,5 +77,5 @@ kernel/%.o: kernel/%.c
 kernel/arch/$(TARGET)/boot.o: kernel/arch/$(TARGET)/boot.s kernel/arch/$(TARGET)/*.s
 	$(nasm) $(nasmflags) -felf $< -o $@
 
-kernel/arch/$(ARCH)/%.o: kernel/arch/$(ARCH)/%.s | kernel/arch/$(ARCH)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
+kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
 	$(nasm) $(nasmflags) -felf $< -o $@
