@@ -5,7 +5,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef struct pci_device {
+  uint16_t vendor_id;
+  uint16_t device_id;
+  //uint16_t command;
+  uint16_t status;
+  uint8_t rev_id;
+  uint8_t prog_IF;
+  uint8_t subclass;
+  uint8_t classcode;
+  uint8_t cache_line_size;
+  uint8_t latency_timer;
+  uint8_t header_type;
+  uint8_t BIST;
+} pci_device_t;
+
 #define pci_get_address(bus, slot, func, offset) (0x80000000 | ((bus) << 16) | ((slot) << 11) | ((func) << 8) | ((offset) & 0xfc))
+//#define pic_get_address(bus, slot) (0x80000000 | ((bus) << 16) | ((slot) << 11)
 
 void pci_config_write(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t v) {
   outportl(PCI_CONFIG_ADDRESS, pci_get_address(bus, slot, func, offset));
@@ -115,6 +131,18 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFF0);
   }
 
+}
+
+void pci_scan(pci_scan_callback_t callback, void * driver_data) {
+  for (uint16_t bus = 0; bus < 256; bus++) {
+    for (uint8_t device = 0; device < 32; device++) {
+      uint16_t vendor_id = pci_checkVendor(bus, device);
+      if (vendor_id != 0xFFFF) {
+        uint16_t device_id = pci_read_config(bus, device, 0, 2, 2);
+        callback(pci_get_address(bus, device, 0, 0), vendor_id, device_id, driver_data);
+      }
+    }
+  }
 }
 
 void pci_bruteforce() {
