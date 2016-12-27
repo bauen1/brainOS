@@ -1,14 +1,14 @@
 # Makefile
-TARGET ?=i686
-ARCH = $(TARGET)
-TOOLS=$(PREFIX)/bin/$(TARGET)-elf
-
-cc=$(TOOLS)-gcc
-c++=$(TOOLS)-g++
-objcopy=$(TOOLS)-objcopy
-ld=$(TOOLS)-ld
 root_dir :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 prefix ?=$(root_dir)/toolchain/opt/cross
+arch ?=i686
+target = $(arch)-elf
+tools=$(prefix)/bin/$(target)
+
+cc=$(tools)-gcc
+c++=$(tools)-g++
+objcopy=$(tools)-objcopy
+ld=$(tools)-ld
 nasm=nasm
 grub-mkrescue ?=grub-mkrescue
 
@@ -68,13 +68,13 @@ $(isodir)/boot/grub/grub.cfg: grub.cfg
 kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
-kernel/kernel.elf: kernel/arch/$(TARGET)/linker.ld kernel/arch/$(TARGET)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h kernel/arch/$(TARGET)/*
+kernel/kernel.elf: kernel/arch/$(arch)/linker.ld kernel/arch/$(arch)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h
 	$(cc) $(cflags) -I./include/kernel -nostdlib -o $@ -T $^
 
 kernel/%.o: kernel/%.c
 	$(cc) $(cflags) -I./include/kernel -nostdlib -c $< -o $@
 
-kernel/arch/$(TARGET)/boot.o: kernel/arch/$(TARGET)/boot.s kernel/arch/$(TARGET)/*.s
+kernel/arch/$(arch)/boot.o: kernel/arch/$(arch)/boot.s kernel/arch/$(arch)/*.s | kernel/arch/$(arch)/*
 	$(nasm) $(nasmflags) -felf $< -o $@
 
 kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly

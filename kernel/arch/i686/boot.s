@@ -59,6 +59,7 @@ _boot:
 .end:
 
 %include "kernel/arch/i686/gdt-flush.s"
+%include "kernel/arch/i686/tss-flush.s"
 %include "kernel/arch/i686/idt-flush.s"
 %include "kernel/arch/i686/interrupts.s"
 %include "kernel/arch/i686/paging.s"

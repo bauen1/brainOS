@@ -14,11 +14,15 @@ SECTIONS
         *(.rodata)
       }
 
+      . = ALIGN(4096)
+
       .data BLOCK(4K) : ALIGN(4096)
       {
         data = .;
         *(.data)
       }
+
+      . = ALIGN(4096)
 
       .bss BLOCK(4K) : ALIGN(4096)
       {
@@ -26,6 +30,8 @@ SECTIONS
         *(COMMON)
         *(.bss)
       }
+
+      . = ALIGN(4096)
 
       end = .; _end = .; __end = .;
 
