@@ -161,7 +161,10 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   pmm_alloc_region(0x00000000, 0x00100000);
 
   // lets just say we don't want to "allocate" the space where our code lives
-  pmm_alloc_region((uint32_t)&start, kernel_length + PMM_BLOCK_SIZE); // round up to the next page/block
+  pmm_alloc_region((uint32_t)&start, kernel_length);
+  puthex("kernel_length:      ", kernel_length);
+  puthex("(uint32_t)&start:   ", (uint32_t)&start);
+  puthex("(uint32_t)&end:     ", (uint32_t)&end);
 
   // Physical Memory Manager Test:
   // pmm_used_blocks should be the same on both prints
