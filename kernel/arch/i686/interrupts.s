@@ -276,8 +276,3 @@ isr48:        cli
               push byte 0
               push byte 48
               jmp isr_common_stub
-global isr49
-isr49:        cli
-              push byte 0
-              push byte 49
-              jmp isr_common_stub

@@ -56,11 +56,10 @@ extern uint32_t end;
 extern uint32_t start;
 
 void kpanic (struct registers * registers) {
-  // TODO: Make this more epic, blue background etc everyone loves a good old BSOD
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
   tty_clear();
   puts("KERNEL PANIC:\n");
-  puts((char *)exception[registers->isr_num]);
+  puts((char *)exception[registers->isr_num]); // TODO: check bounds
   putc('\n');
   puthex("ds:       ", registers->ds);
   puthex("edi:      ", registers->edi);

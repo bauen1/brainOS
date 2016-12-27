@@ -91,10 +91,9 @@ void idt_install() {
   idt_set_gate(45, (uint32_t)isr45, 0x08, 0x8E);
   idt_set_gate(46, (uint32_t)isr46, 0x08, 0x8E);
   idt_set_gate(47, (uint32_t)isr47, 0x08, 0x8E);
-  idt_set_gate(48, (uint32_t)isr48, 0x08, 0x8E);
 
   // syscall entry point
-  idt_set_gate(49, (uint32_t)isr49, 0x08, 0x8E); // FIXME: we need to change the flags of this one
+  idt_set_gate(48, (uint32_t)isr48, 0x08, 0x8E); // FIXME: we need to change the flags of this one
 
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;
@@ -109,14 +108,12 @@ void set_isr_handler(uint8_t i, isr_t handler) {
 }
 
 void isr_handler(struct registers * registers) {
-  if ((registers->isr_num >= 32) && (registers->isr_num <= 48)) { // IRQ
-    if (registers->isr_num >= 40) { // IRQ originated from the slave PIC
-      outportb(PIC2_COMMAND, PIC_EOI);
+  if ((registers->isr_num >= IRQ0) && (registers->isr_num <= IRQ15)) { // IRQ
+    if (registers->isr_num >= IRQ8) { // IRQ originated from the slave PIC
+      outportb(PIC2_COMMAND, PIC_EOI); // aknownledge the interrupt
     }
 
-    outportb(PIC1_COMMAND, PIC_EOI);
-
-  } else {                        // ISR / syscall
+    outportb(PIC1_COMMAND, PIC_EOI); // aknownledge the interrupt
 
   }
 

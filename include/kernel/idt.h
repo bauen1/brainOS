@@ -12,9 +12,21 @@ typedef struct idt_entry {
   uint16_t offset_high;
 } __attribute__((packed)) idt_entry_t;
 
-typedef struct registers {
-  uint32_t gs, fs, es, ds; // segment registers
-  uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+typedef struct registers { // This is what the stack looks like to the C interrupt handler
+  uint32_t gs;
+  uint32_t fs;
+  uint32_t es;
+  uint32_t ds;
+
+  uint32_t edi;
+  uint32_t esi;
+  uint32_t ebp;
+  uint32_t esp;
+  uint32_t ebx;
+  uint32_t edx;
+  uint32_t ecx;
+  uint32_t eax;
+
   uint32_t isr_num;
   uint32_t err_code;
 
@@ -39,6 +51,24 @@ void set_isr_handler(uint8_t i, isr_t handler);
 
 #define PIC_EOI 0x20
 
+#define IRQ0 0x20
+#define IRQ1 0x21
+#define IRQ2 0x22
+#define IRQ3 0x23
+#define IRQ4 0x24
+#define IRQ5 0x25
+#define IRQ6 0x26
+#define IRQ7 0x27
+#define IRQ8 0x28
+#define IRQ9 0x29
+#define IRQ10 0x2a
+#define IRQ11 0x2b
+#define IRQ12 0x2c
+#define IRQ13 0x2d
+#define IRQ14 0x2e
+#define IRQ15 0x2f
+
+// exceptions
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -72,6 +102,7 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
+// IRQs
 extern void isr32();
 extern void isr33();
 extern void isr34();
@@ -88,8 +119,8 @@ extern void isr44();
 extern void isr45();
 extern void isr46();
 extern void isr47();
-extern void isr48();
 
-extern void isr49();
+// syscall
+extern void isr48();
 
 #endif
