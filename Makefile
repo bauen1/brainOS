@@ -71,11 +71,9 @@ kernel/kernel.sym: kernel/kernel.elf
 kernel/kernel.elf: kernel/arch/$(arch)/linker.ld kernel/arch/$(arch)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h
 	$(cc) $(cflags) -I./include/kernel -nostdlib -o $@ -T $^
 
-kernel/%.o: kernel/%.c
+# TODO: use gcc to create object files for each c file to speed up building
+kernel/%.o: kernel/%.c | include/kernel/*.h
 	$(cc) $(cflags) -I./include/kernel -nostdlib -c $< -o $@
-
-kernel/arch/$(arch)/boot.o: kernel/arch/$(arch)/boot.s kernel/arch/$(arch)/*.s | kernel/arch/$(arch)/*
-	$(nasm) $(nasmflags) -felf $< -o $@
 
 kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
 	$(nasm) $(nasmflags) -felf $< -o $@

@@ -107,7 +107,9 @@ void set_isr_handler(uint8_t i, isr_t handler) {
   isr_handlers[i] = handler;
 }
 
-void isr_handler(struct registers * registers) {
+struct registers * isr_handler(struct registers * registers) {
+  struct registers * new_registers = registers;
+
   if ((registers->isr_num >= IRQ0) && (registers->isr_num <= IRQ15)) { // IRQ
     if (registers->isr_num >= IRQ8) { // IRQ originated from the slave PIC
       outportb(PIC2_COMMAND, PIC_EOI); // aknownledge the interrupt
@@ -121,4 +123,6 @@ void isr_handler(struct registers * registers) {
   if (isr_handlers[registers->isr_num] != 0) {
     isr_handlers[registers->isr_num](registers);
   }
+
+  return new_registers;
 }

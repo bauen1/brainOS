@@ -17,7 +17,7 @@
 #include "pmm.h"
 #include "vmm.h"
 
-const char* exception[] = {
+const char * exception[] = {
   "Division by Zero",
   "Debug Exception",
   "NMI",
@@ -89,6 +89,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // TODO: really need to do the above
   gdt_init();
   idt_install();
+  for (int i = 0; i < 32; i++) { // Catch all exceptions with
+    set_isr_handler(i, kpanic);
+  }
 
   tty_init();
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
@@ -102,7 +105,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   puthex("stack size:         ", stack_size);
   puthex("esp:                ", esp);
   puthex("modules count:      ", mbi->mods_count);
-  puthex("memmap size:        ", mbi->mmap_length);
   putc('\n');
 
   char buf[64];
@@ -114,36 +116,16 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   keyboard_install();
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
-  time_init(1); // setup the clock to fire every 18.222 times per second (default)
+  time_init(1); // setup the clock to fire every second (1hz)
   pci_install();
 
-  for (int i = 0; i < 32; i++) {
-    set_isr_handler(i, kpanic);
-  }
-
   putc('\n');
-  puts("Parsing Memory Map:\n");
   multiboot_memory_map_t *mmap;
   int region = 0;
   for (mmap = (multiboot_memory_map_t *) mbi->mmap_addr;
        (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
        mmap = (multiboot_memory_map_t *) ((unsigned long) mmap
                                 + mmap->size + sizeof (mmap->size))) {
-    puts("Region 0x");
-    _puthex_8(region);
-    puts(": start: ");
-    _puthex_8(mmap->addr>>24);
-    _puthex_8(mmap->addr>>16);
-    _puthex_8(mmap->addr>>8);
-    _puthex_8(mmap->addr);
-    puts(" length: ");
-    _puthex_8(mmap->len>>24);
-    _puthex_8(mmap->len>>16);
-    _puthex_8(mmap->len>>8);
-    _puthex_8(mmap->len);
-    puts(" type: ");
-    _puthex_8(mmap->type);
-    putc('\n');
 
     if (mmap->type == 1) {
       pmm_free_region(mmap->addr, mmap->len);
@@ -167,6 +149,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // Physical Memory Manager Test:
   // pmm_used_blocks should be the same on both prints
+  /*
   puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
 
   void * p = pmm_alloc_block();
@@ -183,6 +166,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   pmm_free_block(p);
   pmm_free_blocks(p2, 2);
   puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
+  */
 
   __asm__ __volatile__("sti");  // enable interrupts
 
@@ -202,6 +186,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
       _wait(2 * 18.22 * 10);
     } else if (strncmp(buffer, "listpci", 7) == 0) {
       pci_list();
+    } else if (strncmp(buffer, "panic", 5) == 0) {
+      __asm__ __volatile__ ("int $0"); // pretend a division by zero
     }
   }
 

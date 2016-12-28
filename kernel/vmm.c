@@ -23,7 +23,7 @@ void vmm_init() { // Identity map 4GBs
     page_directory[j] = ((unsigned int)page_tables[j]) | 3;
   }
 
-  puthex("page_directory: ", (uint32_t)page_directory);
+  //puthex("page_directory: ", (uint32_t)page_directory);
   load_page_directory((uint32_t)&page_directory);
   enable_paging();
 }

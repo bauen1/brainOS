@@ -17,6 +17,7 @@ isr_common_stub:
 
               push esp            ; push a the stack pointer
               call isr_handler    ; so we can use it as a pointer to a struct in here
+              ;mov eax, esp        ; return value (uint32_t) is the new stack pointer
               add esp, 4
 
               pop gs

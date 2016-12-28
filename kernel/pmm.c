@@ -123,7 +123,6 @@ void pmm_free_blocks(void * p, size_t size) {
 }
 
 void pmm_init(size_t memory_size, uint32_t mem_map) {
-  puthex("mem_map: ", mem_map);
   pmm_mem_size = memory_size / 8;
   pmm_mem_map = (uint32_t *)mem_map;
   pmm_used_blocks = 0;
