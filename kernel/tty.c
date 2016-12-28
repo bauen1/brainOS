@@ -75,23 +75,6 @@ inline void tty_putc(char c) {
   outportb(0x3D4, 15);
   outportb(0x3D5, v);
 
-  // Display cursor position in the top left corner
-
-  unsigned char buf[3];
-  memset(buf, 0, 3);
-  itoa(x, (void *)&buf, 10);
-
-  put_v_at('C'   , attribute, 72, 0);
-  put_v_at(':'   , attribute, 73, 0);
-  put_v_at(' '   , attribute, 74, 0);
-  put_v_at(buf[0], attribute, 75, 0);
-  put_v_at(buf[1], attribute, 76, 0);
-  memset(buf, 0, 3);
-
-  itoa(y, (void *)&buf, 10);
-  put_v_at(' '   , attribute, 77, 0);
-  put_v_at(buf[0], attribute, 78, 0);
-  put_v_at(buf[1], attribute, 79, 0);
 }
 
 inline uint8_t tty_get_cursor_x() {

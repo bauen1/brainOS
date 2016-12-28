@@ -30,6 +30,7 @@ _multiboot_header:
                 ;dd 0
                 ;dd 640
                 ;dd 480
+                ;db 0
 
 section .text
 global _boot:function _boot.end-_boot
