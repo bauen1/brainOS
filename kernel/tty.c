@@ -2,8 +2,8 @@
 #include "system.h"
 #include "vga.h"
 
-static void memsetw(unsigned short * destination, unsigned short v, size_t num) {
-  unsigned short * d = destination;
+static void memsetw(uint16_t * destination, uint16_t v, size_t num) {
+  uint16_t * d = destination;
   for (size_t i = 0; i < num; i++) {
     d[i] = v;
   }
@@ -42,7 +42,7 @@ static void scroll() {
   }
 }
 
-void tty_putc(char c) {
+inline void tty_putc(char c) {
   if (c == 0x08) { // backspace
     if (x != 0) {
       x--;
@@ -56,7 +56,8 @@ void tty_putc(char c) {
     y++;
   } else if (c >= ' ') {
     // printable
-    video_memory[y * VGA_WIDTH + x] = get_vga_v(c, attribute);
+    //video_memory[y * width + x] = get_vga_v(c, attribute);
+    put_v_at(c, attribute, x, y);
     x++;
   }
 
@@ -93,26 +94,26 @@ void tty_putc(char c) {
   put_v_at(buf[1], attribute, 79, 0);
 }
 
-uint8_t tty_get_cursor_x() {
+inline uint8_t tty_get_cursor_x() {
   return x;
 }
 
-uint8_t tty_get_cursor_y() {
+inline uint8_t tty_get_cursor_y() {
   return y;
 }
 
-void tty_set_cursor_x(uint8_t _x) {
+inline void tty_set_cursor_x(uint8_t _x) {
   x = _x;
 }
 
-void tty_set_cursor_y(uint8_t _y) {
+inline void tty_set_cursor_y(uint8_t _y) {
   y = _y;
 }
 
-void tty_set_attribute(uint8_t v) {
+inline void tty_set_attribute(uint8_t v) {
   attribute = v;
 }
 
-uint8_t tty_get_attribute() {
+inline uint8_t tty_get_attribute() {
   return attribute;
 }
