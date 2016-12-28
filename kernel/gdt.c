@@ -11,7 +11,7 @@ static void gdt_set_gate(uint32_t i, uint32_t base, uint32_t limit, uint8_t acce
   gdt_entries[i].base = base & 0xFFFF;
   gdt_entries[i].base2 = (base >> 16) & 0xFF;
   gdt_entries[i].access = access;
-  gdt_entries[i].garnularity = (garnularity >> 16) & 0x0F;
+  gdt_entries[i].garnularity = (limit >> 16) & 0x0F;
   gdt_entries[i].garnularity |= garnularity & 0xF0;
   gdt_entries[i].base3 = (base >> 24) & 0xFF;
 }
@@ -32,10 +32,10 @@ void gdt_init() {
   tss.IOPB_offset = sizeof(struct gdt_tss_entry);
 
   gdt_set_gate(0, 0, 0xFFFFFFFF, 0x00, 0x00); // NULL segment
-  gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel Code segment
-  gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel Data segment
-  gdt_set_gate(3, 0, 0x00000000, 0x00, 0x00); // User Code segment
-  gdt_set_gate(4, 0, 0x00000000, 0x00, 0x00); // User Data segment
+  gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xC0); // Kernel Code segment
+  gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xC0); // Kernel Data segment
+  gdt_set_gate(3, 0, 0xFFFFFFFF, 0xF8, 0xC0); // User Code segment
+  gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xC0); // User Data segment
   gdt_set_gate(5, (uint32_t)&tss, sizeof(struct gdt_tss_entry), 0x89, 0x40); // TSS segment
 
   gdt_p.offset = (uint32_t)&gdt_entries;
