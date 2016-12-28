@@ -2,8 +2,9 @@
 #define TTY_H
 
 #include "system.h"
+#include "multiboot.h"
 
-void tty_init();
+void tty_init(struct multiboot_info * mbi);
 void tty_clear();
 void tty_putc(char c);
 

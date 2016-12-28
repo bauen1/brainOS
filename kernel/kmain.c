@@ -93,7 +93,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     set_isr_handler(i, kpanic);
   }
 
-  tty_init();
+  tty_init(mbi);
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
   puts("| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n");

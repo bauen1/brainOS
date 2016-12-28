@@ -8,6 +8,8 @@ install:
 
 script: make all prefix="$HOME/opt/cross"
 
+tests: make tests prefix="$HOME/opt/cross"
+
 cache:
   directories:
     - $HOME/opt/cross/

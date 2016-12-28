@@ -11,6 +11,7 @@ objcopy=$(tools)-objcopy
 ld=$(tools)-ld
 nasm=nasm
 grub-mkrescue ?=grub-mkrescue
+grub-file ?=grub-file
 
 cflags  =-std=gnu99 -O2 -ffreestanding
 cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
@@ -28,12 +29,20 @@ all: iso
 
 .PHONY: clean
 clean:
+	rm -rf $(isodir)
 	rm -rf $(iso)
 	rm -rf */*.o *.o
 	rm -rf */*.bin *.bin
 	rm -rf kernel/kernel.elf kernel/kernel.sym
 	rm -rf kernel/arch/*/*.o
-	rm -rf iso/*
+
+.PHONY: tests multiboot-test
+tests: multiboot-test
+
+# TODO: make this a bit cleaner and add more tests
+multiboot-test:	$(isodir)/boot/brainOS/kernel.elf
+	@$(grub-file) --is-x86-multiboot $< && echo "[test] kernel is multiboot 1"
+	@#$(grub-file) --is-x86-multiboot2 $< && echo "[test] kernel is multiboot 2"
 
 .PHONY: qemu
 qemu: $(iso) kernel/kernel.sym
@@ -47,23 +56,24 @@ debug: kernel/kernel.sym
 toolchain: $(cc)
 
 $(cc): toolchain/build.sh
-	@cd toolchain ; ./build.sh
+	cd toolchain ; ./build.sh
 
 iso: $(iso)
 
-$(iso): $(isodir)/boot/grub/grub.cfg $(isodir)/boot/brainOS/kernel.elf LICENCE
-	mkdir -p $(isodir)/boot/grub
-	mkdir -p $(isodir)/boot/brainOS
-	cp LICENCE $(isodir)/boot/brainOS/LICENCE
+$(iso): $(isodir)/boot/grub/grub.cfg $(isodir)/boot/brainOS/kernel.elf $(isodir)/boot/brainOS/LICENCE
 	$(grub-mkrescue) -o $(iso) $(isodir)
+
+$(isodir)/boot/grub/grub.cfg: grub.cfg
+	mkdir -p $(@D)
+	cp $< $@
+
+$(isodir)/boot/brainOS/LICENCE: LICENCE
+	mkdir -p $(@D)
+	cp $< $@
 
 $(isodir)/boot/brainOS/kernel.elf: kernel/kernel.elf
 	mkdir -p $(@D)
 	$(objcopy) --strip-debug $< $@
-
-$(isodir)/boot/grub/grub.cfg: grub.cfg
-	mkdir -p $(isodir)/boot/grub
-	cp grub.cfg $(isodir)/boot/grub/grub.cfg
 
 kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@

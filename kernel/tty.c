@@ -18,8 +18,8 @@ static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
   video_memory[y * VGA_WIDTH + x] = get_vga_v(c, attribute);
 }
 
-void tty_init() {
-  video_memory = (uint16_t*)0xb8000;
+void tty_init(struct multiboot_info * mbi) {
+  video_memory = (uint16_t *)(uint32_t)mbi->framebuffer_addr;
   x = 0;
   y = 0;
   tty_clear();
@@ -47,7 +47,7 @@ inline void tty_putc(char c) {
     if (x != 0) {
       x--;
     }
-  } else if (c == 0x09) {
+  } else if (c == 0x09) { // tab
     x = (x + 8) & ~(8 - 1);
   } else if (c == '\r') {
     x = 0;
