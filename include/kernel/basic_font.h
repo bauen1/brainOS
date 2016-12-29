@@ -1,4 +1,5 @@
 #ifndef BASIC_FONT_H
+#define BASIC_FONT_H
 
 /**
  * 8x8 monochrome bitmap fonts for rendering

@@ -14,8 +14,9 @@ Please note that the kernel currently depends on grub2 loading it.
   ```
   make toolchain
   ```
-* Install grub-mkresuce yourself until i figure out how i installed it, take a look at `toolchain/build.sh`
-* if your only linux you can use `sudo apt-get install grub2`
+* Install grub2
+  * On Linux use `sudo apt-get install grub2`
+  * On anything else, you have to install grub2 yourself
 
 ## Running in Qemu
 * if grub-mkrescue is in your path: `make qemu`
