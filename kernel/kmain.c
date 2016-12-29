@@ -84,6 +84,25 @@ void kpanic (struct registers * registers) {
   }
 }
 
+__attribute__((optimize(0))) static void stacksmash() {
+  putc('A');
+  char buffer[10];
+  memcpy(buffer, (char *)"AAAAAAAAAAAAAAABBBB", 20);
+  putc('B');
+  putc('\n');
+}
+
+// TODO: this is hardcoded and yeah this is bad (even tho its a terminator canary)
+// TODO: implement constructors so we can somewhat randomize this
+uintptr_t __stack_chk_guard = 0x0a0dFF00;
+__attribute__((noreturn)) void __stack_chk_fail() {
+  puts("Someone tried to smash the stack on his own head :(");
+  __asm__ __volatile__ ("cli");
+  for(;;){
+    __asm__ __volatile__ ("hlt");
+  }
+}
+
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // TODO: implement printf, this is a mess
   // TODO: really need to do the above
@@ -197,6 +216,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
       pci_list();
     } else if (strncmp(buffer, "panic", 5) == 0) {
       __asm__ __volatile__ ("int $0"); // pretend a division by zero
+    } else if (strncmp(buffer, "stacksmash", 10) == 0) {
+      stacksmash();
     }
   }
 
