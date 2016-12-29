@@ -7,6 +7,7 @@
 * [grub-mkrescue (linux has it preinstalled this is for macOS users)](http://wiki.osdev.org/GRUB_2#Installing_GRUB2_on_Mac_OS_X)
 
 # Running
+Please note that the kernel currently depends on grub2 loading it.
 
 ## Compile the Toolchain
 * Compile it:

@@ -87,12 +87,18 @@ void kpanic (struct registers * registers) {
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // TODO: implement printf, this is a mess
   // TODO: really need to do the above
+
+  // Initialise Segmentation
   gdt_init();
+
+  // Initialise Interrupt handlers
   idt_install();
-  for (int i = 0; i < 32; i++) { // Catch all exceptions with
+  for (int i = 0; i < 32; i++) {
+    // Catch all exceptions with a panicking
     set_isr_handler(i, kpanic);
   }
 
+  // Initialise standard output
   tty_init(mbi);
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
@@ -115,11 +121,12 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   puts("kb\n");
 
   keyboard_install();
-  pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
   time_init(1); // setup the clock to fire every second (1hz)
   pci_install();
 
-  putc('\n');
+  pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
+
+  // Parse the memory map supplied to us by grub
   multiboot_memory_map_t *mmap;
   int region = 0;
   for (mmap = (multiboot_memory_map_t *) mbi->mmap_addr;
@@ -135,17 +142,21 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
     region++;
   }
-  // The length of the kernel from start to end
-  uint32_t kernel_length = (((uint32_t)&end) - ((uint32_t)&start));
 
   // memory below 1 mb is for special purpose (virtual 8086 mode)
   pmm_alloc_region(0x00000000, 0x00100000);
+
+  // The length of the kernel from start to end
+  uint32_t kernel_length = (((uint32_t)&end) - ((uint32_t)&start));
 
   // lets just say we don't want to "allocate" the space where our code lives
   pmm_alloc_region((uint32_t)&start, kernel_length);
   puthex("kernel_length:      ", kernel_length);
   puthex("(uint32_t)&start:   ", (uint32_t)&start);
   puthex("(uint32_t)&end:     ", (uint32_t)&end);
+
+  // Initialise Paging (this just identity maps 4GBs atm)
+  vmm_init();
 
   // Physical Memory Manager Test:
   // pmm_used_blocks should be the same on both prints
@@ -169,8 +180,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   */
 
   __asm__ __volatile__("sti");  // enable interrupts
-
-  vmm_init();
 
   char buffer[1024];
   while (true) {

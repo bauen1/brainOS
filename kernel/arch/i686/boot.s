@@ -59,6 +59,7 @@ _boot:
                   jmp .halt
 .end:
 
+;%include "kernel/arch/i686/ports.s"
 %include "kernel/arch/i686/gdt-flush.s"
 %include "kernel/arch/i686/tss-flush.s"
 %include "kernel/arch/i686/idt-flush.s"

@@ -13,9 +13,11 @@ nasm=nasm
 grub-mkrescue ?=grub-mkrescue
 grub-file ?=grub-file
 
-cflags  =-std=gnu99 -O2 -ffreestanding
-cflags +=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
-cflags +=-g
+cflags  = -std=gnu99 -O2 -ffreestanding
+cflags += -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
+cflags += -g
+cflags += -fstack-protector
+kernel_cflags = -D__BRAINOS_KERNEL__
 nasmflags=-w+orphan-labels
 
 isodir=./iso
@@ -79,11 +81,11 @@ kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
 kernel/kernel.elf: kernel/arch/$(arch)/linker.ld kernel/arch/$(arch)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h
-	$(cc) $(cflags) -I./include/kernel -nostdlib -o $@ -T $^
+	$(cc) $(cflags) $(kernel_cflags) -I./include/kernel -nostdlib -o $@ -T $^
 
 # TODO: use gcc to create object files for each c file to speed up building
 kernel/%.o: kernel/%.c | include/kernel/*.h
-	$(cc) $(cflags) -I./include/kernel -nostdlib -c $< -o $@
+	$(cc) $(cflags) $(kernel_cflags) -I./include/kernel -nostdlib -c $< -o $@
 
 kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
 	$(nasm) $(nasmflags) -felf $< -o $@

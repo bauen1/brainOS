@@ -56,7 +56,6 @@ inline void tty_putc(char c) {
     y++;
   } else if (c >= ' ') {
     // printable
-    //video_memory[y * width + x] = get_vga_v(c, attribute);
     put_v_at(c, attribute, x, y);
     x++;
   }
