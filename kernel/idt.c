@@ -25,13 +25,13 @@ void idt_install() {
   memset((void*)&idt_entries, 0x0, sizeof(struct idt_entry) * 256);
 
   // initialize the PIC
-  outportb(PIC1_COMMAND, 0x11);
-  outportb(PIC2_COMMAND, 0x11);
+  outportb(PIC1_COMMAND, 0x11); // start initialisation on the master
+  outportb(PIC2_COMMAND, 0x11); // and slave PIC
 
   outportb(PIC1_DATA, 0x20); // IRQ0-7 maps to ISR32-39
   outportb(PIC2_DATA, 0x28); // IRQ8-15 maps to ISR40-47
 
-  outportb(PIC1_DATA, 0x04);
+  outportb(PIC1_DATA, 0x04); // setup cascading
   outportb(PIC2_DATA, 0x02);
 
   outportb(PIC1_DATA, 0x01);
@@ -41,7 +41,7 @@ void idt_install() {
   outportb(PIC2_DATA, 0x00); // enable interrupts 8-15
   //
 
-  // setup all the gates (TODO: setup isr 48-256 if i'm bored)
+  // Exceptions
   idt_set_gate( 0, (uint32_t)isr0 , 0x08, 0x8E);
   idt_set_gate( 1, (uint32_t)isr1 , 0x08, 0x8E);
   idt_set_gate( 2, (uint32_t)isr2 , 0x08, 0x8E);
@@ -94,6 +94,11 @@ void idt_install() {
 
   // syscall entry point
   idt_set_gate(48, (uint32_t)isr48, 0x08, 0x8E); // FIXME: we need to change the flags of this one
+
+  // setup a dummy isr handler
+  for (int i = 49; i <= 255; i++) {
+    idt_set_gate(i, (uint32_t)isr0, 0x08, 0x8E); // FIXME: create a special dummy handler
+  }
 
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;

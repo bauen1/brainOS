@@ -141,6 +141,7 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFFF);
   }
 
+  putc('\n');
 }
 
 void pci_scan(pci_scan_callback_t callback, void * driver_data) {

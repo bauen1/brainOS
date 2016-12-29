@@ -10,36 +10,77 @@ static void memsetw(uint16_t * destination, uint16_t v, size_t num) {
   }
 }
 
-uint16_t * video_memory;
+uint8_t * video_memory;
 uint8_t attribute = get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 
 uint8_t x, y;
 
+static uint32_t width, height, pitch, bytes_per_pixel;
+static uint32_t char_width, char_height;
+
+// TODO: parse framebuffer_red_mask_size etc
+static inline void putpixel_16m(uint32_t x, uint32_t y, uint32_t color) {
+  uint8_t * dest = video_memory + x * bytes_per_pixel + y * pitch;
+  dest[0] = color & 0xFF;
+  dest[1] = (color >> 8) & 0xFF;
+  dest[2] = (color >> 16) & 0xFF;
+}
+
+static inline void put_rect_fill(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b, uint32_t w, uint32_t h) {
+  uint8_t * dest = video_memory + x * bytes_per_pixel + y * pitch;
+  for (uint32_t i = 0; i < w; i++) {
+    for (uint32_t j = 0; j < h; j++) {
+      dest[j * bytes_per_pixel] = r;
+      dest[j * bytes_per_pixel + 1] = g;
+      dest[j * bytes_per_pixel + 2] = b;
+    }
+    dest += pitch;
+  }
+}
+
 static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
-  video_memory[y * VGA_WIDTH + x] = get_vga_v(c, attribute);
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      if (font8x8_basic[c][i] & (1 << j)) {
+        putpixel_16m(x * 8 + j, y * 8 + i, 0x00);
+      }
+    }
+  }
 }
 
 void tty_init(struct multiboot_info * mbi) {
   video_memory = (uint16_t *)(uint32_t)mbi->framebuffer_addr;
   x = 0;
   y = 0;
+  bytes_per_pixel = mbi->framebuffer_bpp / 8;
+  width = mbi->framebuffer_width;
+  char_width = width / 8; // FIXME: Buggy and hacky = very bad
+  height = mbi->framebuffer_height;
+  char_height = height / 8;
+  pitch = mbi->framebuffer_pitch;
   tty_clear();
+  puthex("framebuffer_addr:     ", mbi->framebuffer_addr);
+  puthex("framebuffer_pitch:    ", mbi->framebuffer_pitch);
+  puthex("framebuffer_width:    ", mbi->framebuffer_width);
+  puthex("framebuffer_height:   ", mbi->framebuffer_height);
+  puthex("framebuffer_bpp:      ", mbi->framebuffer_bpp);
+  puthex("framebuffer_type:     ", mbi->framebuffer_type & 0xFF);
+  puthex("char_width:           ", char_width);
 }
 
-void tty_clear() {
-  for (int i = 0; i < VGA_HEIGHT; i++) {
-    memsetw((short unsigned int *)(video_memory + i * VGA_WIDTH), get_vga_v(' ', attribute), VGA_WIDTH);
-  }
+inline void tty_clear() {
+  put_rect_fill(0, 0, 255, 255, 255, height, width);
 }
 
 static void scroll() {
-  unsigned char tmp;
-  if (y >= VGA_HEIGHT) {
-    tmp = y - VGA_HEIGHT + 1;
-    memcpy(video_memory, video_memory + (tmp * VGA_WIDTH), (VGA_HEIGHT - tmp) * VGA_WIDTH * 2);
-
-    memsetw((short unsigned int *)(video_memory + (VGA_HEIGHT - tmp) * VGA_WIDTH), get_vga_v(' ', attribute), VGA_WIDTH);
-    y = VGA_HEIGHT - 1;
+  if (y >= char_height) {
+    uint32_t tmp = y - char_height + 1;
+    tmp *= 8;
+    // TODO: copy everything 1 row up and fill the last row again
+    for (uint32_t y = tmp; y < height; y++) {
+      memcpy((void *)(video_memory + y * pitch), (void *)(video_memory + (y - tmp) * pitch), width * bytes_per_pixel);
+    }
+    put_rect_fill(0, height - tmp, 255, 255, 255, tmp, width);
   }
 }
 
@@ -69,15 +110,9 @@ inline void tty_putc(char c) {
     x++;
   }
 
+
+
   scroll();
-
-  // Move the cursor
-  unsigned int v = y * VGA_WIDTH + x;
-  outportb(0x3D4, 14);
-  outportb(0x3D5, v >> 8);
-  outportb(0x3D4, 15);
-  outportb(0x3D5, v);
-
 }
 
 inline uint8_t tty_get_cursor_x() {
