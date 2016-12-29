@@ -17,7 +17,7 @@
 #include "pmm.h"
 #include "vmm.h"
 
-const char * exception[] = {
+const char * exception[32] = {
   "Division by Zero",
   "Debug Exception",
   "NMI",
@@ -59,7 +59,11 @@ void kpanic (struct registers * registers) {
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
   tty_clear();
   puts("KERNEL PANIC:\n");
-  puts((char *)exception[registers->isr_num]); // TODO: check bounds
+  if (registers->isr_num < 32) {
+    puts((char *)exception[registers->isr_num]);
+  } else {
+    puts("Exception number out of bounds");
+  }
   putc('\n');
   puthex("ds:       ", registers->ds);
   puthex("edi:      ", registers->edi);
