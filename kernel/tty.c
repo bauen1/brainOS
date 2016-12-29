@@ -1,6 +1,7 @@
 #include "tty.h"
 #include "system.h"
 #include "vga.h"
+#include "basic_font.h"
 
 static void memsetw(uint16_t * destination, uint16_t v, size_t num) {
   uint16_t * d = destination;
@@ -49,6 +50,10 @@ inline void tty_putc(char c) {
     }
   } else if (c == 0x09) { // tab
     x = (x + 8) & ~(8 - 1);
+    if (x >= char_width) {
+      x = 0;
+      y++;
+    }
   } else if (c == '\r') {
     x = 0;
   } else if (c == '\n') {
@@ -56,13 +61,12 @@ inline void tty_putc(char c) {
     y++;
   } else if (c >= ' ') {
     // printable
+    if (x >= char_width) {
+      x = 0;
+      y++;
+    }
     put_v_at(c, attribute, x, y);
     x++;
-  }
-
-  if (x > VGA_WIDTH) {
-    x = 0;
-    y++;
   }
 
   scroll();

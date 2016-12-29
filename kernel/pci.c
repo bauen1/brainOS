@@ -68,7 +68,17 @@ const char* classcode_lookup[256] = {
   "Intelligent I/O Controller",
   "Satellite Communication Controller",
   "Data Acquisition and Signal Processing Controller",
-  // TODO: Fill this thing up
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","","","","","","","","","","","","","","","","","","","","","","","",
+  "","","","",
+  "Device does not fit any class",
 };
 
 void pci_checkDevice(uint8_t bus, uint8_t slot) {
@@ -123,12 +133,12 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     }
   }*/
   if ((header_type & 0x7F) == 0x00) {
-    //puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
-    //puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFF0);
-    //puthex("bar2: ", pci_read_config(bus, slot, 0, 0x18, 4) & 0xFFFFFFF0);
-    //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4) & 0xFFFFFFF0);
-    //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4) & 0xFFFFFFF0);
-    //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFF0);
+    puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
+    puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFFF);
+    //puthex("bar2: ", pci_read_config(bus, slot, 0, 0x18, 4) & 0xFFFFFFFF);
+    //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4) & 0xFFFFFFFF);
+    //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4) & 0xFFFFFFFF);
+    //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFFF);
   }
 
 }

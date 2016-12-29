@@ -21,7 +21,6 @@ static inline bool pmm_mem_test (uint32_t bit) {
   return pmm_mem_map[bit / 32] & (1 << (bit % 32));
 }
 
-// TODO: optimize this
 static int pmm_find_first_free () {
   for (uint32_t i = 0; i < pmm_mem_size; i++) {
     if (pmm_mem_map[i] != 0xFFFFFFFF) {
@@ -37,7 +36,6 @@ static int pmm_find_first_free () {
   return -1;
 }
 
-// TODO: optimize this too
 static int pmm_find_first_free_region (size_t size) {
   if (size == 0) {
     return -1;

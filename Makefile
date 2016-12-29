@@ -18,6 +18,8 @@ cflags += -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-format
 cflags += -g
 cflags += -fstack-protector
 kernel_cflags = -D__BRAINOS_KERNEL__
+kernel_cflags += -D__ARCH__=$(arch)
+kernel_cflags += -D__TARGET__=$(target)
 nasmflags=-w+orphan-labels
 
 isodir=./iso
