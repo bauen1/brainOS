@@ -117,7 +117,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // Initialise Interrupt handlers
   idt_install();
   for (int i = 0; i < 32; i++) {
-    // Catch all exceptions with a panicking
+    // Catch all exceptions with a kernel panic
     set_isr_handler(i, kpanic);
   }
 
@@ -128,13 +128,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   puts("| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n");
   puts("+------------------------------------------------------------------------------+\n");
   tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
-  putc('\n');
-  puts("boot information:\n");
-  puthex("mboot->flags:       ", mbi->flags);
-  puthex("stack size:         ", stack_size);
-  puthex("esp:                ", esp);
-  puthex("modules count:      ", mbi->mods_count);
-  putc('\n');
 
   char buf[64];
   memset((void *)buf, 0, 20);
@@ -174,9 +167,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // lets just say we don't want to "allocate" the space where our code lives
   pmm_alloc_region((uint32_t)&start, kernel_length);
-  puthex("kernel_length:      ", kernel_length);
-  puthex("(uint32_t)&start:   ", (uint32_t)&start);
-  puthex("(uint32_t)&end:     ", (uint32_t)&end);
+  //puthex("kernel_length:      ", kernel_length);
+  //puthex("(uint32_t)&start:   ", (uint32_t)&start);
+  //puthex("(uint32_t)&end:     ", (uint32_t)&end);
 
   // Initialise Paging (this just identity maps 4GBs atm)
   vmm_init();
@@ -222,6 +215,16 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
       __asm__ __volatile__ ("int $0"); // pretend a division by zero
     } else if (strncmp(buffer, "stacksmash", 10) == 0) {
       stacksmash();
+    } else if (strncmp(buffer, "clear", 5) == 0) {
+      tty_clear();
+    } else if (strncmp(buffer, "help", 4) == 0) {
+      puts("Available commands:\n"
+          "help:        prints a list of available commands\n"
+          "modules:     prints the number of modules loaded by grub\n"
+          "listpci:     lists all attached pci devices\n"
+          "panic:       causes a kernel panic by triggering a interrupt 0\n"
+          "stacksmash:  tests the stack smash protection will cause a kernel panic\n"
+          "clear:       clears the screen\n");
     }
   }
 

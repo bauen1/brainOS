@@ -30,6 +30,7 @@ const char * classcode_lookup[20] = {
 
 #define pci_get_address(bus, slot, func, offset) (0x80000000 | ((bus) << 16) | ((slot) << 11) | ((func) << 8) | ((offset) & 0xfc))
 
+// TODO: make this such a handy function as below
 void pci_config_write(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t v) {
   outportl(PCI_CONFIG_ADDRESS, pci_get_address(bus, slot, func, offset));
   outportl(PCI_CONFIG_DATA, v);
@@ -47,14 +48,6 @@ uint32_t pci_read_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset
   }
 
   return 0xFFFF;
-}
-
-uint16_t pci_checkVendor(uint8_t bus, uint8_t slot) {
-  return pci_read_config(bus, slot, 0, 0, 2);
-}
-
-uint8_t pci_read_config_header_type(uint8_t bus, uint8_t slot) {
-  return (uint8_t)pci_read_config(bus, slot, 0, 0x0E, 1);
 }
 
 void pci_scan(pci_scan_callback_t callback, void * driver_data) {

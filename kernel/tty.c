@@ -54,7 +54,7 @@ void tty_init(struct multiboot_info * mbi) {
   y = 0;
   bytes_per_pixel = mbi->framebuffer_bpp / 8;
   width = mbi->framebuffer_width;
-  char_width = width / 8; // FIXME: Buggy and hacky = very bad
+  char_width = width / 8;
   height = mbi->framebuffer_height;
   char_height = height / 8;
   pitch = mbi->framebuffer_pitch;
@@ -70,6 +70,8 @@ void tty_init(struct multiboot_info * mbi) {
 
 inline void tty_clear() {
   put_rect_fill(0, 0, 255, 255, 255, height, width);
+  x = 0;
+  y = 0;
 }
 
 static void scroll() {
@@ -95,13 +97,12 @@ inline void tty_putc(char c) {
       x = 0;
       y++;
     }
-  } else if (c == '\r') {
+  } else if (c == '\r') { // carriage return
     x = 0;
-  } else if (c == '\n') {
-    x = 0;
+  } else if (c == '\n') { // newline
+    x = 0; // also assume a carriage return
     y++;
-  } else if (c >= ' ') {
-    // printable
+  } else if (c >= ' ') { // printable
     if (x >= char_width) {
       x = 0;
       y++;
