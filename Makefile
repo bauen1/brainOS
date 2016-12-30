@@ -83,7 +83,7 @@ kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
 kernel/kernel.elf: kernel/arch/$(arch)/linker.ld kernel/arch/$(arch)/boot.o kernel/kmain.c kernel/*.c | include/kernel/*.h
-	$(cc) $(cflags) $(kernel_cflags) -I./include/kernel -nostdlib -o $@ -T $^
+	time $(cc) $(cflags) $(kernel_cflags) -I./include/kernel -nostdlib -o $@ -T $^
 
 # TODO: use gcc to create object files for each c file to speed up building
 kernel/%.o: kernel/%.c | include/kernel/*.h

@@ -112,6 +112,7 @@ void set_isr_handler(uint8_t i, isr_t handler) {
   isr_handlers[i] = handler;
 }
 
+// TODO: handle spurious isrs and maybe move the acknowledge code to the handlers
 struct registers * isr_handler(struct registers * registers) {
   struct registers * new_registers = registers;
 

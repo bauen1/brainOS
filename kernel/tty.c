@@ -49,7 +49,7 @@ static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
 }
 
 void tty_init(struct multiboot_info * mbi) {
-  video_memory = (uint16_t *)(uint32_t)mbi->framebuffer_addr;
+  video_memory = (uint8_t *)(uint32_t)mbi->framebuffer_addr;
   x = 0;
   y = 0;
   bytes_per_pixel = mbi->framebuffer_bpp / 8;

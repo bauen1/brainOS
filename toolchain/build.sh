@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO: have another prefix for non-cross compiler stuff (flex automake etc)
 PREFIX="$PWD/opt/cross"
 TARGET=i686-elf
 PATCH_PATH="$PWD"

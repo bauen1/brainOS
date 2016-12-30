@@ -4,7 +4,6 @@ MB_EAX_MAGIC equ 0x2BADB002                 ;
 MB_PAGE_ALIGN	equ 1<<0                      ; align on 4kb boundary
 MB_MEMORY_INFO	equ 1<<1                    ; request mem_info struct
 MB_VIDEO_MODE equ 1<<2                      ;
-MB_HEADER_FLAGS equ (MB_PAGE_ALIGN | MB_MEMORY_INFO) ;  "| MB_VIDEO_MODE"
 MB_CHECKSUM equ -(MB_HEADER_MAGIC + MB_HEADER_FLAGS)
 
 STACK_SIZE equ 32768                        ; 32kb (gotta think big)
@@ -25,12 +24,7 @@ _multiboot_header:
                 dd code                     ;
                 dd bss                      ;
                 dd end                      ;
-                dd _boot                    ;
 
-                ;dd 0
-                ;dd 640
-                ;dd 480
-                ;db 0
 
 section .text
 global _boot:function _boot.end-_boot

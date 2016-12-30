@@ -5,23 +5,30 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct pci_device {
-  uint16_t vendor_id;
-  uint16_t device_id;
-  //uint16_t command;
-  uint16_t status;
-  uint8_t rev_id;
-  uint8_t prog_IF;
-  uint8_t subclass;
-  uint8_t classcode;
-  uint8_t cache_line_size;
-  uint8_t latency_timer;
-  uint8_t header_type;
-  uint8_t BIST;
-} pci_device_t;
+const char * classcode_lookup[20] = {
+  "Unclassified device",
+  "Mass storage controller",
+  "Network controller",
+  "Display controller",
+  "Mulimedia controller",
+  "Memory controller",
+  "Bridge",
+  "Communication controller",
+  "Generic system peripheral",
+  "Input device controller",
+  "Docking station",
+  "Processor",
+  "Serial bus controller",
+  "Wireless controller",
+  "Intelligent controller",
+  "Satellite communication controller",
+  "Encryption controller",
+  "Signal processing controller",
+  "Processing accelerators",
+  "Non-Essential Instrumentation",
+};
 
 #define pci_get_address(bus, slot, func, offset) (0x80000000 | ((bus) << 16) | ((slot) << 11) | ((func) << 8) | ((offset) & 0xfc))
-//#define pic_get_address(bus, slot) (0x80000000 | ((bus) << 16) | ((slot) << 11)
 
 void pci_config_write(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t v) {
   outportl(PCI_CONFIG_ADDRESS, pci_get_address(bus, slot, func, offset));
@@ -50,53 +57,45 @@ uint8_t pci_read_config_header_type(uint8_t bus, uint8_t slot) {
   return (uint8_t)pci_read_config(bus, slot, 0, 0x0E, 1);
 }
 
-const char* classcode_lookup[256] = {
-  "classcode: 0x00!",
-  "Mass Storage Controller",
-  "Network Controller",
-  "Display Controller",
-  "Mulimedia Controller",
-  "Memory Controller",
-  "Bridge Device",
-  "Simple Communication Controller",
-  "Base System Peripherals",
-  "Input Device",
-  "Docking Station",
-  "Processor",
-  "Serial Bus Controller",
-  "Wireless Controller",
-  "Intelligent I/O Controller",
-  "Satellite Communication Controller",
-  "Data Acquisition and Signal Processing Controller",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","","","","","","","","","","","","","","","","","","","","","","","",
-  "","","","",
-  "Device does not fit any class",
-};
+void pci_scan(pci_scan_callback_t callback, void * driver_data) {
+  for (uint16_t bus = 0; bus < 256; bus++) {
+    for (uint8_t slot = 0; slot < 32; slot++) {
+      uint16_t vendor_id = pci_checkVendor(bus, slot);
+      if (vendor_id != 0xFFFF) {
+        uint16_t device_id = pci_read_config(bus, slot, 0, 2, 2);
+        callback(bus, slot, vendor_id, device_id, driver_data);
+      }
+    }
+  }
+}
 
-void pci_checkDevice(uint8_t bus, uint8_t slot) {
-  uint16_t vendorid = pci_checkVendor(bus, slot);
-  if (vendorid == 0xFFFF) return;
-  uint16_t deviceid = pci_read_config(bus, slot, 0, 2, 2);
+/* This function is a example for a pci_scan callback
+** In a driver you would perform a check to see if the device matches the one
+** you've implemented and if so initialised it etc
+*/
+static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint16_t device_id, void * driver_data) {
   uint32_t head_field = pci_read_config(bus, slot, 0, 8, 4);
   uint8_t classcode = (uint8_t)((head_field & 0xFF000000) >> 24);
   uint8_t subclass = (uint8_t)((head_field & 0x00FF0000) >> 16);
   uint8_t prog_if = (uint8_t)((head_field & 0xFF00) >> 8);
-  //uint8_t rev_id = (uint8_t)((head_field & 0xFF) >> 0);
+  //uint8_t rev_id = (uint8_t)(head_field & 0xFF);
 
   uint8_t header_type = pci_read_config_header_type(bus, slot);
   uint8_t int_line = pci_read_config(bus, slot, 0, 0x3C, 1);
 
   puts("- ");
-  size_t name_len = strlen((char*)classcode_lookup[classcode]);
-  puts((char*)classcode_lookup[classcode]);
+  const char * name;
+  if (classcode <= 0x13) {
+    name = classcode_lookup[classcode];
+  } else if (classcode == 0x40) {
+    name = "Coprocessor";
+  } else if (classcode == 0xFF) {
+    name = "Unassigned class";
+  } else {
+    name = "Reserved class";
+  }
+  size_t name_len = strlen(name);
+  puts((char *)name);
   puts(" (0x");
   _puthex_8(classcode);
   puts(") -");
@@ -104,11 +103,12 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     putc('-');
   }
   puts("\n");
-  puts("vendorid:deviceid:    ");
-  puts("0x");_puthex_8(vendorid >> 8);_puthex_8(vendorid);putc(':');
-  puts("0x");_puthex_8(deviceid >> 8);_puthex_8(deviceid);putc('\n');
-  puts("subclass:             ");
-  puts("0x");_puthex_8(subclass );putc('\n');
+
+  puts("vendor_id:device_id:  ");
+  _puthex_8(vendor_id >> 8);_puthex_8(vendor_id);putc(':');
+  _puthex_8(device_id >> 8);_puthex_8(device_id);putc('\n');
+  puts("classcode:subclass:   ");
+  _puthex_8(classcode );putc(':');_puthex_8(subclass);putc('\n');
   puts("Prog IF:              ");
   puts("0x");_puthex_8(prog_if  );putc('\n');
   puts("header_type:          ");
@@ -119,7 +119,7 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
   puts((header_type & 0x80) ? "multifunction" : "");
   putc('\n');
   puts("int_line:    ");
-  puts("0x");_puthex_8(int_line );putc('\n');
+  puts("0x");_puthex_8(int_line);putc('\n');
 
   /*
   if (header_type & 0x80) {
@@ -139,33 +139,16 @@ void pci_checkDevice(uint8_t bus, uint8_t slot) {
     //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4) & 0xFFFFFFFF);
     //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4) & 0xFFFFFFFF);
     //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFFF);
+  } else if ((header_type & 0x7F) == 0x01) {
+    puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
+    puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFFF);
   }
 
   putc('\n');
 }
 
-void pci_scan(pci_scan_callback_t callback, void * driver_data) {
-  for (uint16_t bus = 0; bus < 256; bus++) {
-    for (uint8_t device = 0; device < 32; device++) {
-      uint16_t vendor_id = pci_checkVendor(bus, device);
-      if (vendor_id != 0xFFFF) {
-        uint16_t device_id = pci_read_config(bus, device, 0, 2, 2);
-        callback(pci_get_address(bus, device, 0, 0), vendor_id, device_id, driver_data);
-      }
-    }
-  }
-}
-
-void pci_bruteforce() {
-  for (int bus = 0; bus < 256; bus++) { // all the busses we need
-    for (int device = 0; device < 32; device++) { // and all the devices too
-      pci_checkDevice(bus, device);
-    }
-  }
-}
-
 void pci_list() {
-  pci_bruteforce();
+  pci_scan((pci_scan_callback_t)pci_printDevice, NULL);
 }
 
 void pci_install() {}
