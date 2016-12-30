@@ -4,7 +4,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-//#define NULL ((void*)0)
+#if !defined(__cplusplus)
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif /* NULL */
+
+#else /* !defined(__cplusplus) */
+
+#ifndef NULL
+#define NULL 0
+#endif /* NULL */
+
+#endif /* !defined(__cplusplus) */
 
 typedef uint32_t size_t;
 
