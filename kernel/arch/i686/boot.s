@@ -3,7 +3,8 @@ MB_HEADER_MAGIC equ 0x1BADB002              ;
 MB_EAX_MAGIC equ 0x2BADB002                 ;
 MB_PAGE_ALIGN	equ 1<<0                      ; align on 4kb boundary
 MB_MEMORY_INFO	equ 1<<1                    ; request mem_info struct
-MB_VIDEO_MODE equ 1<<2                      ;
+MB_VIDEO_MODE equ 1<<2                      ; request a video mode
+MB_HEADER_FLAGS equ (MB_PAGE_ALIGN | MB_MEMORY_INFO | MB_VIDEO_MODE)
 MB_CHECKSUM equ -(MB_HEADER_MAGIC + MB_HEADER_FLAGS)
 
 STACK_SIZE equ 32768                        ; 32kb (gotta think big)
@@ -20,11 +21,16 @@ _multiboot_header:
                 dd MB_HEADER_FLAGS          ;
                 dd MB_CHECKSUM              ;
 
-                dd _multiboot_header        ;
+                dd _multiboot_header        ; header address
                 dd code                     ;
                 dd bss                      ;
                 dd end                      ;
+                dd _boot                    ; entry point
 
+                dd 0                        ; Linear graphics mode
+                dd 0                        ; No preferred width
+                dd 0                        ; No preferred height
+                db 0                        ; No preferred depth
 
 section .text
 global _boot:function _boot.end-_boot
