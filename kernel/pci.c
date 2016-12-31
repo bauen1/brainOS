@@ -111,20 +111,10 @@ static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint1
   puts("\t");
   puts((header_type & 0x80) ? "multifunction" : "");
   putc('\n');
-  puts("int_line:    ");
-  puts("0x");_puthex_8(int_line);putc('\n');
+  puts("int_line:             ");
+  puts("0x");_puthex_8(int_line);
+  putc('\n');
 
-  /*
-  if (header_type & 0x80) {
-    for (uint8_t func = 0; func < 8; func++) {
-      if(pci_read_config(bus, slot, func, 0, 2) != 0xFFFF) {
-        _puthex_8(func);puts(":    ");
-        uint16_t class = pci_read_config(bus, slot, func, 0x0A, 2);
-        _puthex_8(class >> 8);_puthex_8(class);
-        putc('\n');
-      }
-    }
-  }*/
   if ((header_type & 0x7F) == 0x00) {
     puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
     puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFFF);

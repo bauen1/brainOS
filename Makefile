@@ -25,7 +25,7 @@ nasmflags=-w+orphan-labels
 isodir=./iso
 iso=image.iso
 
-qemuflags = -drive file=$(iso),format=raw -s -device rtl8139,netdev=vlan0 -netdev user,restrict=y,id=vlan0 -net none -m 32M -d guest_errors -name "brainOS development vm" -trace net*
+qemuflags = -drive file=$(iso),format=raw -s -device rtl8139,netdev=vlan0 -netdev user,restrict=y,id=vlan0 -net none -net dump,file=/tmp/vm0.pcap -m 32M -d guest_errors -name "brainOS development vm" -trace net*
 
 .DEFAULT: all
 .PHONY: all

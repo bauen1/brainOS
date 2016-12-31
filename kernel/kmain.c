@@ -16,6 +16,7 @@
 #include "pci.h"
 #include "pmm.h"
 #include "vmm.h"
+#include "rtl8139.h"
 
 const char * exception[32] = {
   "Division by Zero",
@@ -196,6 +197,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   */
 
   __asm__ __volatile__("sti");  // enable interrupts
+
+  rtl8139_init();
 
   char buffer[1024];
   while (true) {
