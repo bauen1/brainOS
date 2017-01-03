@@ -108,9 +108,6 @@ __attribute__((noreturn)) void __stack_chk_fail() {
 }
 
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
-  // TODO: implement printf, this is a mess
-  // TODO: really need to do the above
-
   // Initialise Segmentation
   gdt_init();
 
@@ -127,19 +124,13 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // Print our logo
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
-  puts("+------------------------------------------------------------------------------+\n");
-  puts("| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n");
-  puts("+------------------------------------------------------------------------------+\n");
+  kprintf("+------------------------------------------------------------------------------+\n"
+          "| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n"
+          "+------------------------------------------------------------------------------+\n");
   tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 
   // calculate available memory
-  // TODO: i seriously need printf
-  char buf[64];
-  memset((void *)buf, 0, 20);
-  itoa(mbi->mem_upper + mbi->mem_lower, (char *)&buf, 10);
-  puts("calculated memory (from mboot->mem_upper + mboot->mem_lower):    ");
-  puts(&buf[0]);
-  puts("kb\n");
+  kprintf("calculated memory (from mboot->mem_upper + mboot->mem_lower):    %dkb\n", mbi->mem_upper + mbi->mem_lower);
 
   //
   keyboard_install();
@@ -207,6 +198,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   //rtl8139_init();
 
+  kprintf("%s%c: 0x%x :D\n%d\n", "tes", 't', (uint32_t)0xDEADBEEF, 2000);
+
   char buffer[1024];
   while (true) {
     putc('>');
@@ -215,7 +208,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     puts(buffer);
     puts("\n");
     if (strncmp(buffer, "modules", 7) == 0) {
-      puthex("number of modules: ", (uint32_t)mbi->mods_count);
+      printf("number of modules: %d\n", (int)mbi->mods_count);
     } else if (strncmp(buffer, "wait", 4) == 0) {
       puts("Waiting for 10 seconds\n");
       _wait(2 * 18.22 * 10);
@@ -228,7 +221,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     } else if (strncmp(buffer, "clear", 5) == 0) {
       tty_clear();
     } else if (strncmp(buffer, "help", 4) == 0) {
-      puts("Available commands:\n"
+      kprintf("Available commands:\n"
           "help:        prints a list of available commands\n"
           "modules:     prints the number of modules loaded by grub\n"
           "listpci:     lists all attached pci devices\n"

@@ -87,6 +87,7 @@ static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint1
   } else {
     name = "Reserved class";
   }
+
   size_t name_len = strlen(name);
   puts((char *)name);
   puts(" (0x");
@@ -97,34 +98,30 @@ static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint1
   }
   puts("\n");
 
-  puts("vendor_id:device_id:  ");
-  _puthex_8(vendor_id >> 8);_puthex_8(vendor_id);putc(':');
-  _puthex_8(device_id >> 8);_puthex_8(device_id);putc('\n');
-  puts("classcode:subclass:   ");
-  _puthex_8(classcode );putc(':');_puthex_8(subclass);putc('\n');
-  puts("Prog IF:              ");
-  puts("0x");_puthex_8(prog_if  );putc('\n');
-  puts("header_type:          ");
-  puts("0x");_puthex_8(header_type);
-  puts("\t");
-  puts(((header_type & 0x7F) == 0x00) ? "general" : "");
-  puts("\t");
-  puts((header_type & 0x80) ? "multifunction" : "");
-  putc('\n');
-  puts("int_line:             ");
-  puts("0x");_puthex_8(int_line);
-  putc('\n');
+  kprintf("vendor_id:device_id:   %x:%x\n"
+          "classcode: subclass:   %x:%x\n"
+          "Prog IF:               0x%x\n"
+          "header_type:           0x%x\t%s %s\n"
+          "int_line:              0x%x\n",
+          vendor_id, device_id,
+          classcode, subclass,
+          prog_if,
+          header_type,
+          (((header_type & 0x7F) == 0x00) ? "general" : ""),
+          ((header_type & 0x80) ? "multifunction" : "general"),
+          int_line
+        );
 
   if ((header_type & 0x7F) == 0x00) {
-    puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
-    puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFFF);
-    //puthex("bar2: ", pci_read_config(bus, slot, 0, 0x18, 4) & 0xFFFFFFFF);
-    //puthex("bar3: ", pci_read_config(bus, slot, 0, 0x1C, 4) & 0xFFFFFFFF);
-    //puthex("bar4: ", pci_read_config(bus, slot, 0, 0x20, 4) & 0xFFFFFFFF);
-    //puthex("bar5: ", pci_read_config(bus, slot, 0, 0x24, 4) & 0xFFFFFFFF);
+    kprintf("bar0: %x\n", pci_read_config(bus, slot, 0, 0x10, 4));
+    kprintf("bar1: %x\n", pci_read_config(bus, slot, 0, 0x14, 4));
+    //kprintf("bar2: %x\n", pci_read_config(bus, slot, 0, 0x18, 4));
+    //kprintf("bar3: %x\n", pci_read_config(bus, slot, 0, 0x1C, 4));
+    //kprintf("bar4: %x\n", pci_read_config(bus, slot, 0, 0x20, 4));
+    //kprintf("bar5: %x\n", pci_read_config(bus, slot, 0, 0x24, 4));
   } else if ((header_type & 0x7F) == 0x01) {
-    puthex("bar0: ", pci_read_config(bus, slot, 0, 0x10, 4) & 0xFFFFFFFF);
-    puthex("bar1: ", pci_read_config(bus, slot, 0, 0x14, 4) & 0xFFFFFFFF);
+    kprintf("bar0: %x\n", pci_read_config(bus, slot, 0, 0x10, 4));
+    kprintf("bar1: %x\n", pci_read_config(bus, slot, 0, 0x14, 4));
   }
 
   putc('\n');

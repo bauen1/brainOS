@@ -7,11 +7,16 @@
 #include <stdint.h>
 
 void putc (char c);
-void puts (char *str);
+int puts (char *str);
 
 char * itoa( int value, char * str, int base );
 
 void puthex(char * name, uint32_t v);
 void _puthex_8(uint8_t v);
+
+void kprintf(const char * format, ...);
+
+// Because some people are lazy
+#define printf(...) kprintf(__VA_ARGS__)
 
 #endif
