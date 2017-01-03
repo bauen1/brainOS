@@ -2,7 +2,7 @@
 #include "system.h"
 
 extern void gdt_flush(uint32_t);
-extern void tss_flush(uint16_t);
+extern void tss_flush();
 
 struct gdt_entry gdt_entries[6];
 
@@ -23,11 +23,16 @@ static struct {
 
 static struct gdt_tss_entry tss;
 
+// TODO:
 uint8_t kernel_stack[4096] __attribute__((aligned(0x04))); // 4kb
 
+void gdt_set_kernel_stack(uint32_t stack) {
+  tss.esp0 = stack;
+}
+
 void gdt_init() {
-  memset((void*)&tss, sizeof(tss), 0x00);
-  tss.ss0 = 0x10;
+  memset((void*)&tss, 0x00, sizeof(tss));
+  tss.ss0 = 0x10; // Kernel data segment // TODO: create a macro for figuring out the offset
   tss.esp0 = (uint32_t)&kernel_stack;
   tss.IOPB_offset = sizeof(struct gdt_tss_entry);
 
@@ -43,4 +48,5 @@ void gdt_init() {
 
   puts("Flushing GDT table\n");
   gdt_flush((uint32_t)&gdt_p);
+  tss_flush();
 }

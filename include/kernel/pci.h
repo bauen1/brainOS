@@ -15,6 +15,7 @@ typedef void (* pci_scan_callback_t)(uint8_t bus, uint8_t slot, uint16_t vendor_
 
 void pci_scan(pci_scan_callback_t callback, void * driver_data);
 
+void pci_config_write(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t v);
 uint32_t pci_read_config(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, size_t size);
 
 #define pci_read_config_header_type(bus, slot) ((uint8_t)pci_read_config((bus), (slot), 0, 0x0E, 1))

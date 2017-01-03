@@ -34,7 +34,7 @@ static void rtl8139_scan_callback(uint8_t bus, uint8_t slot, uint16_t vendor_id,
     // Enable Bus mastering for our network card:
     uint32_t command = pci_read_config(bus, slot, 0, 0x04, 4);
     command |= (1 << 2) | (1 << 1) | (1 << 0);
-    pci_config_write(bus, slot, 0x04, command);
+    pci_config_write(bus, slot, 0, 0x04, command);
 
     rtl8139_data.bus = bus;
     rtl8139_data.slot = slot;
@@ -105,7 +105,7 @@ static bool rtl8139_irq_config() {
 }
 
 void rtl8139_init() {
-  pci_scan((pci_scan_callback_t)rtl8139_scan_callback, (void *)&rtl8139_data);
+  /*pci_scan((pci_scan_callback_t)rtl8139_scan_callback, (void *)&rtl8139_data);
 
   if (rtl8139_data.io_addr != 0) {
 
@@ -136,17 +136,7 @@ void rtl8139_init() {
 
     // 4. Enable every IRQ i possibly can because why not
     // TODO:
-    rtl8139_writes(0x3C,
-      0x8000 | /* PCI error */
-      0x4000 | /* PCS timeout */
-      0x40   | /* Rx FIFO over */
-      0x20   | /* Rx underrun */
-      0x10   | /* Rx overflow */
-      0x08   | /* Tx error */
-      0x04   | /* Tx okay */
-      0x02   | /* Rx error */
-      0x01     /* Rx okay */
-    );
+    rtl8139_writes(0x3C, 0xFF);
 
     // TODO:
     rtl8139_writel(0x40, 0x00); // Configure transmiting
@@ -166,15 +156,13 @@ void rtl8139_init() {
     rtl8139_writel(0x8, 0xFFFFFFFF); // Setup multicast
     rtl8139_writel(0xC, 0xFFFFFFFF); // ^
 
-    /*uint32_t tx_config_reg = rtl8139_readl(0x40);
+    //uint32_t tx_config_reg = rtl8139_readl(0x40);
 
-    tx_config_reg &= 0xFFFEFFFF;
+    //tx_config_reg &= 0xFFFEFFFF;
 
-    tx_config_reg |= 0x00010000; // append a crc frame
+    //tx_config_reg |= 0x00010000; // append a crc frame
 
-    rtl8139_writel(0x40, tx_config_reg);*/
-
-
+    //rtl8139_writel(0x40, tx_config_reg);
 
 
 
@@ -210,5 +198,5 @@ void rtl8139_init() {
     rtl8139_send(60, (uintptr_t)&test[0]);
   } else {
     puts("No rtl8139 card found\n");
-  }
+  }*/
 }

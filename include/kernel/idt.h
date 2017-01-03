@@ -121,6 +121,6 @@ extern void isr46();
 extern void isr47();
 
 // syscall
-extern void isr48();
+extern void isr128();
 
 #endif

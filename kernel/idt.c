@@ -92,13 +92,16 @@ void idt_install() {
   idt_set_gate(46, (uint32_t)isr46, 0x08, 0x8E);
   idt_set_gate(47, (uint32_t)isr47, 0x08, 0x8E);
 
-  // syscall entry point
-  idt_set_gate(48, (uint32_t)isr48, 0x08, 0x8E); // FIXME: we need to change the flags of this one
-
   // setup a dummy isr handler
   for (int i = 49; i <= 255; i++) {
-    idt_set_gate(i, (uint32_t)isr0, 0x08, 0x8E); // FIXME: create a special dummy handler
+    // FIXME: create a special dummy handler
+    idt_set_gate(i, (uint32_t)isr0, 0x08, 0x8E);
   }
+
+  // syscall entry point
+  // FIXME: we need to change the flags of this one
+  idt_set_gate(0x80, (uint32_t)isr128, 0x08, 0x8E);
+
 
   idt_p.limit = sizeof(struct idt_entry) * 256 - 1;
   idt_p.base = (uint32_t)&idt_entries;

@@ -1,5 +1,4 @@
 extern isr_handler
-extern irq_handler
 
 isr_common_stub:
               pushad
@@ -272,8 +271,10 @@ isr47:        cli
               push byte 0
               push byte 47
               jmp isr_common_stub
-global isr48
-isr48:        cli
+
+; This one is special, its our syscall handler :)
+global isr128
+isr128:       cli
               push byte 0
-              push byte 48
+              push byte 128
               jmp isr_common_stub
