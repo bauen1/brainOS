@@ -5,9 +5,6 @@
 static uint32_t x, y;
 
 static inline void handle_mouse_move(uint8_t data[3]) {
-  //puthex("data[0]: ", data[0]);
-  //puthex("data[1]: ", data[1]);
-  //puthex("data[2]: ", data[2]);
   signed long dx = data[1];
   signed long dy = data[2];
 
@@ -19,13 +16,6 @@ static inline void handle_mouse_move(uint8_t data[3]) {
   if (data[0] & 0x10) {
     dx |= 0xFFFFFF00;
   }
-
-  /*
-  puthex("dx: ", dx);
-  puthex("dy: ", dy);
-  puthex("x:  ", x);
-  puthex("y:  ", y);
-  */
 
   x += dx;
   y -= dy; // Invert Y
@@ -64,60 +54,39 @@ static void mouse_irq12(struct registers * registers) {
   }
 }
 
-static inline void mouse_wait(uint8_t type) {
-  uint32_t time_out = 100000;
-  if (type == 0) {
-    while(time_out > 0) {
-      if((inportb(0x64) & 1) == 1) {
-        return;
-      }
-      time_out--;
-    }
-    return;
-  } else {
-    while(time_out > 0) {
-      if((inportb(0x64) & 2) == 1) {
-        return;
-      }
-      time_out--;
-    }
-    return;
-  }
-  return;
-}
-
-static inline void mouse_write(uint8_t v) {
-  mouse_wait(1);
-  outportb(0x64,0xD4);
-  mouse_wait(1);
-  outportb(0x60, v);
-}
+#define mouse_wait_0() (for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&1)==1)); i++){})
+#define mouse_wait_1() (for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&2)==1)); i++){})
 
 static uint8_t mouse_read() {
-  mouse_wait(0);
+  mouse_wait_0();
   return inportb(0x60);
 }
 
 void mouse_init() {
   set_irq_handler(12, (isr_t)&mouse_irq12);
 
-  uint8_t status = 0;
-  mouse_wait(1);
-
+  mouse_wait_1();
   outportb(0x64, 0x20);
-  mouse_wait(0);
+  mouse_wait_0();
 
-  status = inportb(0x60);
+  uint8_t status = inportb(0x60);
   status |= 2;
-  mouse_wait(1);
+  mouse_wait_1();
   outportb(0x64, 0x60);
-  mouse_wait(1);
+  mouse_wait_1();
   outportb(0x60, status);
 
-  mouse_write(0xF6); // default settings
-  mouse_read(); // acknowledge
-
-  // enable the mouse
-  mouse_write(0xF4);
-  mouse_read(); // acknowledge
+  mouse_wait_1();
+  outportb(0x64,0xD4);
+  mouse_wait_1();
+  outportb(0x60, 0xF6); // default settings
+  mouse_wait_0();
+  inportb(0x60); // acknowledge
+  
+  mouse_wait_1();
+  outportb(0x64,0xD4);
+  mouse_wait_1();
+  outportb(0x60, 0xF4); // enable the mouse
+  mouse_wait_0();
+  inportb(0x60); // acknowledge
 }
