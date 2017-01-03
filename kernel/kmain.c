@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <assert.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,6 +17,18 @@
 #include "pmm.h"
 #include "vmm.h"
 #include "rtl8139.h"
+
+__attribute__((noreturn)) static inline void halt() {
+  __asm__ __volatile__ ("cli");
+  for(;;){
+    __asm__ __volatile__ ("hlt");
+  }
+}
+
+void __abort(const char * function, const char * filename, const char * line) {
+  kprintf("Assertion failed in function %s in file %s at line %s!\n", function, filename, line);
+  halt();
+}
 
 const char * exception[32] = {
   "Division by Zero",
@@ -52,40 +65,50 @@ const char * exception[32] = {
   "Reserved",
 };
 
-extern uint32_t end;
-extern uint32_t start;
-
-void kpanic (struct registers * registers) {
+__attribute__((noreturn)) void kpanic (struct registers * registers) {
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
   tty_clear();
   puts("KERNEL PANIC:\n");
   if (registers->isr_num < 32) {
     puts((char *)exception[registers->isr_num]);
+    putc('\n');
   } else {
-    puts("Exception number out of bounds");
+    puts("Exception number out of bounds\n");
   }
-  putc('\n');
-  puthex("ds:       ", registers->ds);
-  puthex("edi:      ", registers->edi);
-  puthex("esi:      ", registers->esi);
-  puthex("ebp:      ", registers->ebp);
-  puthex("esp:      ", registers->esp);
-  puthex("ebx:      ", registers->ebx);
-  puthex("edx:      ", registers->edx);
-  puthex("ecx:      ", registers->ecx);
-  puthex("eax:      ", registers->eax);
-  puthex("isr_num:  ", registers->isr_num);
-  puthex("err_code: ", registers->err_code);
-  puthex("eip:      ", registers->eip);
-  puthex("cs:       ", registers->cs);
-  puthex("eflags:   ", registers->eflags);
-  puthex("useresp:  ", registers->useresp);
-  puthex("ss:       ", registers->ss);
+  kprintf("ds:          0x%x\n"
+          "edi:         0x%x\n"
+          "esi:         0x%x\n"
+          "ebp:         0x%x\n"
+          "esp:         0x%x\n"
+          "ebx:         0x%x\n"
+          "edx:         0x%x\n"
+          "ecx:         0x%x\n"
+          "eax:         0x%x\n"
+          "isr_num:     0x%x\n"
+          "err_code:    0x%x\n"
+          "eip:         0x%x\n"
+          "eflags:      0x%x\n"
+          "useresp:     0x%x\n"
+          "ss:          0x%x\n",
+    registers->ds,
+    registers->edi,
+    registers->esi,
+    registers->ebp,
+    registers->esp,
+    registers->ebx,
+    registers->edx,
+    registers->ecx,
+    registers->eax,
+    registers->isr_num,
+    registers->err_code,
+    registers->eip,
+    registers->cs,
+    registers->eflags,
+    registers->useresp,
+    registers->ss
+  );
 
-  __asm__ __volatile__ ("cli");
-  for(;;){
-    __asm__ __volatile__ ("hlt");
-  }
+  halt();
 }
 
 __attribute__((optimize(0))) static void stacksmash() {
@@ -101,11 +124,11 @@ __attribute__((optimize(0))) static void stacksmash() {
 uintptr_t __stack_chk_guard = 0x0a0dFF00;
 __attribute__((noreturn)) void __stack_chk_fail() {
   puts("Someone tried to smash the stack on his own head :(");
-  __asm__ __volatile__ ("cli");
-  for(;;){
-    __asm__ __volatile__ ("hlt");
-  }
+  halt();
 }
+
+extern uint32_t end;
+extern uint32_t start;
 
 int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // Initialise Segmentation
@@ -220,6 +243,8 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
       stacksmash();
     } else if (strncmp(buffer, "clear", 5) == 0) {
       tty_clear();
+    } else if (strncmp(buffer, "assert", 6) == 0) {
+      assert(false);
     } else if (strncmp(buffer, "help", 4) == 0) {
       kprintf("Available commands:\n"
           "help:        prints a list of available commands\n"
@@ -227,7 +252,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
           "listpci:     lists all attached pci devices\n"
           "panic:       causes a kernel panic by triggering a interrupt 0\n"
           "stacksmash:  tests the stack smash protection will cause a kernel panic\n"
-          "clear:       clears the screen\n");
+          "clear:       clears the screen\n"
+          "assert:      causes a assertion fail\n"
+        );
     }
   }
 

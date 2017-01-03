@@ -132,7 +132,7 @@ void vkprintf(const char * format, va_list args) {
   return;
 }
 
-void kprintf(const char * format, ...) {
+__attribute__((format(__printf__, 1, 2))) void kprintf(const char * format, ...) {
   va_list args;
   va_start(args, format);
   vkprintf(format, args);
