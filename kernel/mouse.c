@@ -54,8 +54,8 @@ static void mouse_irq12(struct registers * registers) {
   }
 }
 
-#define mouse_wait_0() (for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&1)==1)); i++){})
-#define mouse_wait_1() (for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&2)==1)); i++){})
+#define mouse_wait_0() for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&1)==1)); i++){}
+#define mouse_wait_1() for (uint32_t i = 0; (i>0)&&(!((inportb(0x64)&2)==1)); i++){}
 
 static uint8_t mouse_read() {
   mouse_wait_0();
@@ -82,7 +82,7 @@ void mouse_init() {
   outportb(0x60, 0xF6); // default settings
   mouse_wait_0();
   inportb(0x60); // acknowledge
-  
+
   mouse_wait_1();
   outportb(0x64,0xD4);
   mouse_wait_1();
