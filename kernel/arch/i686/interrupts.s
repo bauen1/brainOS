@@ -27,7 +27,7 @@ isr_common_stub:
               popad
 
               add esp, 8          ; removes the error code & isr num
-              sti
+              ;sti
               iret
 
 global isr0

@@ -97,6 +97,7 @@ char * getsn(char * str, size_t max) {
   return NULL;
 }
 
+// This is the best way to create a stack smash vulnerability
 char * gets(char * str) {
   return getsn(str, SIZE_MAX);
 }

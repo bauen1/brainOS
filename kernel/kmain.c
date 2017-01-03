@@ -1,6 +1,4 @@
-#if !defined(__cplusplus)
 #include <stdbool.h>
-#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,6 +11,7 @@
 #include "time.h"
 #include "gdt.h"
 #include "keyboard.h"
+#include "mouse.h"
 #include "pci.h"
 #include "pmm.h"
 #include "vmm.h"
@@ -117,19 +116,24 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // Initialise Interrupt handlers
   idt_install();
+
+  // Catch all exceptions with a kernel panic
   for (int i = 0; i < 32; i++) {
-    // Catch all exceptions with a kernel panic
     set_isr_handler(i, kpanic);
   }
 
   // Initialise standard output
   tty_init(mbi);
+
+  // Print our logo
   tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   puts("+------------------------------------------------------------------------------+\n");
   puts("| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n");
   puts("+------------------------------------------------------------------------------+\n");
   tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 
+  // calculate available memory
+  // TODO: i seriously need printf
   char buf[64];
   memset((void *)buf, 0, 20);
   itoa(mbi->mem_upper + mbi->mem_lower, (char *)&buf, 10);
@@ -137,8 +141,14 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   puts(&buf[0]);
   puts("kb\n");
 
+  //
   keyboard_install();
-  time_init(1); // setup the clock to fire every second (1hz)
+  mouse_init();
+
+  // setup the clock to fire every second (1hz)
+  time_init(1);
+
+  // setup the pci bus (FIXME: there isn't much to initialise right ?)
   pci_install();
 
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
@@ -168,9 +178,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // lets just say we don't want to "allocate" the space where our code lives
   pmm_alloc_region((uint32_t)&start, kernel_length);
-  //puthex("kernel_length:      ", kernel_length);
-  //puthex("(uint32_t)&start:   ", (uint32_t)&start);
-  //puthex("(uint32_t)&end:     ", (uint32_t)&end);
 
   // Initialise Paging (this just identity maps 4GBs atm)
   vmm_init();
@@ -198,7 +205,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   __asm__ __volatile__("sti");  // enable interrupts
 
-  rtl8139_init();
+  //rtl8139_init();
 
   char buffer[1024];
   while (true) {

@@ -19,7 +19,7 @@ static uint32_t width, height, pitch, bytes_per_pixel;
 static uint32_t char_width, char_height;
 
 // TODO: parse framebuffer_red_mask_size etc
-static inline void putpixel_16m(uint32_t x, uint32_t y, uint32_t color) {
+/*static inline*/ void putpixel_16m(uint32_t x, uint32_t y, uint32_t color) {
   uint8_t * dest = video_memory + x * bytes_per_pixel + y * pitch;
   dest[0] = color & 0xFF;
   dest[1] = (color >> 8) & 0xFF;
@@ -76,13 +76,18 @@ inline void tty_clear() {
 
 static void scroll() {
   if (y >= char_height) {
-    uint32_t tmp = y - char_height + 1;
+    /*uint32_t tmp = y - char_height + 1;
     tmp *= 8;
     // TODO: copy everything 1 row up and fill the last row again
     for (uint32_t y = tmp; y < height; y++) {
       memcpy((void *)(video_memory + y * pitch), (void *)(video_memory + (y - tmp) * pitch), width * bytes_per_pixel);
     }
-    put_rect_fill(0, height - tmp, 255, 255, 255, tmp, width);
+    put_rect_fill(0, height - tmp, 255, 255, 255, tmp, width);*/
+    for (int i = 0; i < 8; i++) {
+      memcpy((void *)(video_memory + i * pitch), (void *)(video_memory + (i - 8) * pitch), width);
+    }
+    put_rect_fill(0, height - 8, 255, 255, 255, 8, width);
+    tty_clear();
   }
 }
 
