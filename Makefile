@@ -21,6 +21,10 @@ cflags += -fstack-protector
 kernel_cflags = -D__BRAINOS_KERNEL__
 kernel_cflags += -D__ARCH__=$(arch)
 kernel_cflags += -D__TARGET__=$(target)
+modules_cflags = -D__BRAINOS_MODULE__
+modules_cflags += -D__ARCH__=$(arch)
+modules_cflags += -D__TARGET__=$(target)
+
 nasmflags=-w+orphan-labels
 
 isodir=./iso
@@ -65,7 +69,7 @@ $(cc): toolchain/build.sh
 
 iso: $(iso)
 
-$(iso): $(isodir)/boot/grub/grub.cfg $(isodir)/boot/brainOS/kernel.elf $(isodir)/boot/brainOS/LICENCE
+$(iso): $(isodir)/boot/grub/grub.cfg $(isodir)/boot/brainOS/kernel.elf $(isodir)/boot/brainOS/LICENCE $(isodir)/boot/brainOS/modules/
 	$(grub-mkrescue) -o $(iso) $(isodir)
 
 $(isodir)/boot/grub/grub.cfg: grub.cfg
@@ -80,6 +84,14 @@ $(isodir)/boot/brainOS/kernel.elf: kernel/kernel.elf
 	mkdir -p $(@D)
 	$(objcopy) --strip-debug $< $@
 
+# FIXME
+$(isodir)/boot/brainOS/modules/: $(isodir)/boot/brainOS/modules/hello_world.elf
+	mkdir -p $(@D)
+
+$(isodir)/boot/brainOS/modules/%.elf: modules/%.elf
+	mkdir -p $(@D)
+	cp $< $@
+
 kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
 
@@ -92,3 +104,6 @@ kernel/%.o: kernel/%.c | include/kernel/*.h
 
 kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # This is deliberatly a * because we don't really have a nice way to detect %include in assembly
 	$(nasm) $(nasmflags) -felf $< -o $@
+
+modules/%.elf: modules/linker.ld modules/%.c | include/kernel/*.h
+	time $(cc) $(cflags) $(modules_cflags) -I./include/kernel -nostdlib -o $@ -T $^

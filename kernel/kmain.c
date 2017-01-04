@@ -18,6 +18,40 @@
 #include "vmm.h"
 #include "rtl8139.h"
 
+typedef struct elf_header {
+  uint32_t magic;
+  uint8_t bitsize;
+  uint8_t endian;
+  uint8_t elf_version0;
+  uint8_t os_abi;
+  uint32_t unused0;
+  uint32_t unused1;
+  uint16_t type;
+  uint16_t instruction_set;
+  uint32_t elf_version1;
+  uint32_t entry_addr;
+  uint32_t programm_header_position;
+  uint32_t section_header_position;
+  uint32_t flags;
+  uint16_t header_size;
+  uint16_t programm_header_entry_size;
+  uint16_t programm_header_entry_count;
+  uint16_t section_header_entry_size;
+  uint16_t section_header_entry_count;
+  uint16_t something_very_important_that_i_dont_have_a_good_name_for_fix_ASAP;
+} __attribute__((packed)) elf_header_t;
+
+typedef struct elf_programm_header_entry {
+  uint32_t type;
+  uint32_t p_offset;
+  uint32_t p_vaddr;
+  uint32_t undefined;
+  uint32_t p_filesz;
+  uint32_t p_memsz;
+  uint32_t flags;
+  uint32_t alignment;
+} __attribute__((packed)) elf_programm_header_entry_t;
+
 __attribute__((noreturn)) static inline void halt() {
   __asm__ __volatile__ ("cli");
   for(;;){
@@ -75,6 +109,8 @@ __attribute__((noreturn)) void kpanic (struct registers * registers) {
   } else {
     puts("Exception number out of bounds\n");
   }
+  //kprintf("ds:          0x%x", registers->ds);
+
   kprintf("ds:          0x%x\n"
           "edi:         0x%x\n"
           "esi:         0x%x\n"
@@ -90,22 +126,14 @@ __attribute__((noreturn)) void kpanic (struct registers * registers) {
           "eflags:      0x%x\n"
           "useresp:     0x%x\n"
           "ss:          0x%x\n",
-    registers->ds,
-    registers->edi,
-    registers->esi,
-    registers->ebp,
-    registers->esp,
-    registers->ebx,
-    registers->edx,
-    registers->ecx,
-    registers->eax,
-    registers->isr_num,
-    registers->err_code,
-    registers->eip,
-    registers->cs,
-    registers->eflags,
-    registers->useresp,
-    registers->ss
+    registers->ds, registers->edi,
+    registers->esi, registers->ebp,
+    registers->esp, registers->ebx,
+    registers->edx, registers->ecx,
+    registers->eax, registers->isr_num,
+    registers->err_code, registers->eip,
+    registers->cs, registers->eflags,
+    registers->useresp, registers->ss
   );
 
   halt();
@@ -164,6 +192,57 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // setup the pci bus (FIXME: there isn't much to initialise right ?)
   pci_install();
+
+  kprintf("Loading modules:\nmbi->mods_addr: 0x%x\n", mbi->mods_addr);
+
+  if (mbi->mods_count > 0) {
+    multiboot_module_t * module_info;
+    kprintf("Trying to load %d modules\n", mbi->mods_count);
+
+    for (uint32_t i = 0; i < mbi->mods_count; i++) {
+      module_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
+      kprintf("module info:\n"
+          "mod_start:   0x%x\n"
+          "mod_end:     0x%x\n"
+          "commandline: '%s'\n",
+        module_info->mod_start,
+        module_info->mod_end,
+        (char *)module_info->cmdline);
+      elf_header_t * elf_header = (elf_header_t *)module_info->mod_start;
+      kprintf("elf_magic: 0x%x\n", elf_header->magic);
+      if (elf_header->magic == 0x464c457f) {
+        kprintf("found a elf module!\n");
+        if (elf_header->bitsize == 1) {
+          kprintf("programm_header_position: 0x%x\n", elf_header->programm_header_position);
+          uint32_t programm_header_position = elf_header->programm_header_position + module_info->mod_start;
+          elf_programm_header_entry_t * programm_header_entry;
+          for (uint32_t j = 0; j < elf_header->programm_header_entry_count; j++) {
+            programm_header_entry = (elf_programm_header_entry_t *)(programm_header_position + j * sizeof(elf_programm_header_entry_t));
+            kprintf("programm_header_entry:\n"
+              "type:        %d\n"
+              "p_offset:    0x%x\n"
+              "p_vaddr:     0x%x\n"
+              "p_filesz:    0x%x\n"
+              "p_memsez:    0x%x\n"
+              "flags:       0x%x\n"
+              "alignment:   0x%x\n",
+              programm_header_entry->type,
+              programm_header_entry->p_offset,
+              programm_header_entry->p_vaddr,
+              programm_header_entry->p_filesz,
+              programm_header_entry->p_memsz,
+              programm_header_entry->flags,
+              programm_header_entry->alignment
+            );
+          }
+          
+        }
+      }
+      end = module_info->mod_end; //
+    }
+  } else {
+    kprintf("No modules loaded!\n");
+  }
 
   pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
 
