@@ -24,8 +24,7 @@ typedef struct elf_header {
   uint8_t endian;
   uint8_t elf_version0;
   uint8_t os_abi;
-  uint32_t unused0;
-  uint32_t unused1;
+  uint64_t unused;
   uint16_t type;
   uint16_t instruction_set;
   uint32_t elf_version1;
@@ -38,7 +37,7 @@ typedef struct elf_header {
   uint16_t programm_header_entry_count;
   uint16_t section_header_entry_size;
   uint16_t section_header_entry_count;
-  uint16_t something_very_important_that_i_dont_have_a_good_name_for_fix_ASAP;
+  uint16_t e_shstrndx;
 } __attribute__((packed)) elf_header_t;
 
 typedef struct elf_programm_header_entry {
@@ -209,9 +208,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
         module_info->mod_end,
         (char *)module_info->cmdline);
       elf_header_t * elf_header = (elf_header_t *)module_info->mod_start;
-      kprintf("elf_magic: 0x%x\n", elf_header->magic);
       if (elf_header->magic == 0x464c457f) {
         kprintf("found a elf module!\n");
+        kprintf("entry point: 0x%x\n", elf_header->entry_addr);
         if (elf_header->bitsize == 1) {
           kprintf("programm_header_position: 0x%x\n", elf_header->programm_header_position);
           uint32_t programm_header_position = elf_header->programm_header_position + module_info->mod_start;

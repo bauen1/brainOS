@@ -59,13 +59,20 @@ void tty_init(struct multiboot_info * mbi) {
   char_height = height / 8;
   pitch = mbi->framebuffer_pitch;
   tty_clear();
-  puthex("framebuffer_addr:     ", mbi->framebuffer_addr);
-  puthex("framebuffer_pitch:    ", mbi->framebuffer_pitch);
-  puthex("framebuffer_width:    ", mbi->framebuffer_width);
-  puthex("framebuffer_height:   ", mbi->framebuffer_height);
-  puthex("framebuffer_bpp:      ", mbi->framebuffer_bpp);
-  puthex("framebuffer_type:     ", mbi->framebuffer_type & 0xFF);
-  puthex("char_width:           ", char_width);
+  kprintf("framebuffer:\n"
+    "addr:    0x%x\n"
+    "pitch:   0x%x\n"
+    "width:   0x%x\n"
+    "height:  0x%x\n"
+    "bpp:     0x%x\n"
+    "type:    %d\n",
+    mbi->framebuffer_addr,
+    mbi->framebuffer_pitch,
+    mbi->framebuffer_width,
+    mbi->framebuffer_height,
+    mbi->framebuffer_bpp,
+    (mbi->framebuffer_type & 0xFF)
+  );
 }
 
 inline void tty_clear() {

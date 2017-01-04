@@ -11,3 +11,6 @@ kernel/kernel.sym
 
 toolchain/build/*
 toolchain/opt/*
+
+modules/*.elf
+modules/*.sym

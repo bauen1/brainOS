@@ -44,6 +44,7 @@ clean:
 	rm -rf */*.bin *.bin
 	rm -rf kernel/kernel.elf kernel/kernel.sym
 	rm -rf kernel/arch/*/*.o
+	rm -rf modules/*.elf modules/*.sym
 
 .PHONY: tests multiboot-test
 tests: multiboot-test
@@ -90,7 +91,8 @@ $(isodir)/boot/brainOS/modules/: $(isodir)/boot/brainOS/modules/hello_world.elf
 
 $(isodir)/boot/brainOS/modules/%.elf: modules/%.elf
 	mkdir -p $(@D)
-	cp $< $@
+	#cp $< $@
+	$(objcopy) --strip-debug $< $@
 
 kernel/kernel.sym: kernel/kernel.elf
 	$(objcopy) --only-keep-debug $< $@
