@@ -51,6 +51,19 @@ typedef struct elf_programm_header_entry {
   uint32_t alignment;
 } __attribute__((packed)) elf_programm_header_entry_t;
 
+typedef struct elf_section_header_entry {
+  uint32_t name;
+  uint32_t type;
+  uint32_t flags;
+  uint32_t addr;
+  uint32_t offset;
+  uint32_t size;
+  uint32_t link;
+  uint32_t info;
+  uint32_t addralign;
+  uint32_t entsize;
+} __attribute__((packed)) elf_section_header_entry_t;
+
 __attribute__((noreturn)) static inline void halt() {
   __asm__ __volatile__ ("cli");
   for(;;){
@@ -212,7 +225,9 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
         kprintf("found a elf module!\n");
         kprintf("entry point: 0x%x\n", elf_header->entry_addr);
         if (elf_header->bitsize == 1) {
-          kprintf("programm_header_position: 0x%x\n", elf_header->programm_header_position);
+          //kprintf("programm_header_position: 0x%x\n", elf_header->programm_header_position);
+
+          /*
           uint32_t programm_header_position = elf_header->programm_header_position + module_info->mod_start;
           elf_programm_header_entry_t * programm_header_entry;
           for (uint32_t j = 0; j < elf_header->programm_header_entry_count; j++) {
@@ -234,7 +249,33 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
               programm_header_entry->alignment
             );
           }
-          
+          */
+
+          uint32_t section_header_position = elf_header->section_header_position + module_info->mod_start;
+          elf_section_header_entry_t * section_header_entry;
+          for (uint32_t j = 0; j < elf_header->section_header_entry_count; j++) {
+            section_header_entry = (elf_section_header_entry_t *)(section_header_position + j * sizeof(elf_section_header_entry_t));
+            kprintf("section_header_entry:\n"
+              "type:          %d\n"
+              "flags:         0x%x\n"
+              "addr:          0x%x\n"
+              "offset:        0x%x\n"
+              "size:          0x%x\n"
+              "link:          0x%x\n"
+              "info:          0x%x\n"
+              "addralign:     0x%x\n"
+              "entsize:       0x%x\n",
+              section_header_entry->type,
+              section_header_entry->flags,
+              section_header_entry->addr,
+              section_header_entry->offset,
+              section_header_entry->size,
+              section_header_entry->link,
+              section_header_entry->info,
+              section_header_entry->addralign,
+              section_header_entry->entsize
+            );
+          }
         }
       }
       end = module_info->mod_end; //

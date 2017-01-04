@@ -21,7 +21,6 @@
 #define VGA_COLOR_LIGHT_BROWN 14
 #define VGA_COLOR_WHITE 15
 
-
 #define get_attribute(fg, bg) ((fg) | ((bg) << 4))
 #define get_vga_v(c, attribute) ((c) | ((attribute) << 8))
 

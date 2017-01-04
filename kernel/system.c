@@ -81,6 +81,7 @@ void _puthex_8(uint8_t v) {
 }
 
 #define _vkprintf_putc(v) putc((v)); len++
+#define _vkprintf_puts(v) len += puts((v))
 
 size_t vkprintf(const char * format, va_list args) {
   size_t len = 0;
@@ -100,26 +101,31 @@ size_t vkprintf(const char * format, va_list args) {
       char * tmp2 = 0;
 
       switch(format[i]) {
+        case 'p':
+          tmp = va_arg(args, int *);
+          itoa((int)&tmp, buf, 16);
+          _vkprintf_puts(buf);
+          break;
         case 'x':
           tmp = va_arg(args, int);
           itoa(tmp, buf, 16);
-          len += puts(buf);
+          _vkprintf_puts(buf);
           break;
         case 'u': // unsigned int
           tmp = va_arg(args, int);
           tmp = (i < 0 ? -i : i); // basic abs() implementation
           itoa(tmp, buf, 10);
-          len += puts(buf);
+          _vkprintf_puts(buf);
           break;
         case 'o': // i don't really know why anyone would need this but hey i implemented it anyway :P
           tmp = va_arg(args, int);
           itoa(tmp, buf, 8);
-          len += puts(buf);
+          _vkprintf_puts(buf);
           break;
         case 'd':
           tmp = va_arg(args, int);
           itoa(tmp, buf, 10);
-          len += puts(buf);
+          _vkprintf_puts(buf);
           break;
         case 'c':
           tmp = va_arg(args, int);
@@ -127,7 +133,7 @@ size_t vkprintf(const char * format, va_list args) {
           break;
         case 's':
           tmp2 = va_arg(args, char *);
-          len += puts(tmp2);
+          _vkprintf_puts(tmp2);
           break;
         case '%':
           _vkprintf_putc('%');
