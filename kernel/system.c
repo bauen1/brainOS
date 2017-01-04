@@ -107,7 +107,7 @@ size_t vkprintf(const char * format, va_list args) {
           break;
         case 'u': // unsigned int
           tmp = va_arg(args, int);
-          tmp = abs(tmp);
+          tmp = (i < 0 ? -i : i); // basic abs() implementation
           itoa(tmp, buf, 10);
           len += puts(buf);
           break;
