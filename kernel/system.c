@@ -105,6 +105,17 @@ size_t vkprintf(const char * format, va_list args) {
           itoa(tmp, buf, 16);
           len += puts(buf);
           break;
+        case 'u': // unsigned int
+          tmp = va_arg(args, int);
+          tmp = abs(tmp);
+          itoa(tmp, buf, 10);
+          len += puts(buf);
+          break;
+        case 'o': // i don't really know why anyone would need this but hey i implemented it anyway :P
+          tmp = va_arg(args, int);
+          itoa(tmp, buf, 8);
+          len += puts(buf);
+          break;
         case 'd':
           tmp = va_arg(args, int);
           itoa(tmp, buf, 10);
@@ -117,6 +128,9 @@ size_t vkprintf(const char * format, va_list args) {
         case 's':
           tmp2 = va_arg(args, char *);
           len += puts(tmp2);
+          break;
+        case '%':
+          _vkprintf_putc('%');
           break;
         default:
           _vkprintf_putc(format[i]);
