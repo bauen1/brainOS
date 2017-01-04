@@ -1,7 +1,7 @@
 #ifndef ASSERT_H
 #define ASSERT_H
 
-extern void __abort(const char * function, const char * filename, const char * line);
+extern void __abort(const char * function, const char * filename, int line);
 
 #if defined(NDEBUG)
 #define assert(expression) (0)

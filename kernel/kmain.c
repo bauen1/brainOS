@@ -25,8 +25,8 @@ __attribute__((noreturn)) static inline void halt() {
   }
 }
 
-void __abort(const char * function, const char * filename, const char * line) {
-  kprintf("Assertion failed in function %s in file %s at line %s!\n", function, filename, line);
+void __abort(const char * function, const char * filename, int line) {
+  kprintf("Assertion failed in function %s in file %s at line %d!\n", function, filename, line);
   halt();
 }
 
@@ -220,8 +220,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   __asm__ __volatile__("sti");  // enable interrupts
 
   //rtl8139_init();
-
-  kprintf("%s%c: 0x%x :D\n%d\n", "tes", 't', (uint32_t)0xDEADBEEF, 2000);
 
   char buffer[1024];
   while (true) {
