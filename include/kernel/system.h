@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define abs(v) (v < 0 ? -v : v)
+
 void putc (char c);
 int puts (char *str);
 

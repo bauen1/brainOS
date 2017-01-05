@@ -28,8 +28,8 @@ static uint32_t char_width, char_height;
 
 static inline void put_rect_fill(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b, uint32_t w, uint32_t h) {
   uint8_t * dest = video_memory + x * bytes_per_pixel + y * pitch;
-  for (uint32_t i = 0; i < w; i++) {
-    for (uint32_t j = 0; j < h; j++) {
+  for (uint32_t i = 0; i < h; i++) {
+    for (uint32_t j = 0; j < w; j++) {
       dest[j * bytes_per_pixel] = r;
       dest[j * bytes_per_pixel + 1] = g;
       dest[j * bytes_per_pixel + 2] = b;
@@ -76,24 +76,14 @@ void tty_init(struct multiboot_info * mbi) {
 }
 
 inline void tty_clear() {
-  put_rect_fill(0, 0, 255, 255, 255, height, width);
+  put_rect_fill(0, 0, 255, 255, 255, width, height);
   x = 0;
   y = 0;
 }
 
 static void scroll() {
   if (y >= char_height) {
-    /*uint32_t tmp = y - char_height + 1;
-    tmp *= 8;
-    // TODO: copy everything 1 row up and fill the last row again
-    for (uint32_t y = tmp; y < height; y++) {
-      memcpy((void *)(video_memory + y * pitch), (void *)(video_memory + (y - tmp) * pitch), width * bytes_per_pixel);
-    }
-    put_rect_fill(0, height - tmp, 255, 255, 255, tmp, width);*/
-    for (int i = 0; i < 8; i++) {
-      memcpy((void *)(video_memory + i * pitch), (void *)(video_memory + (i - 8) * pitch), width);
-    }
-    put_rect_fill(0, height - 8, 255, 255, 255, 8, width);
+    // TODO: implement
     tty_clear();
   }
 }
@@ -122,8 +112,6 @@ inline void tty_putc(char c) {
     put_v_at(c, attribute, x, y);
     x++;
   }
-
-
 
   scroll();
 }

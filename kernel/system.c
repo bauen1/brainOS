@@ -98,22 +98,17 @@ size_t vkprintf(const char * format, va_list args) {
       }
 
       int tmp = 0;
-      char * tmp2 = 0;
+      void * tmp2 = 0;
 
       switch(format[i]) {
-        case 'p':
-          tmp = va_arg(args, int *);
-          itoa((int)&tmp, buf, 16);
-          _vkprintf_puts(buf);
-          break;
-        case 'x':
+        case 'x': // hexadecimal
           tmp = va_arg(args, int);
           itoa(tmp, buf, 16);
           _vkprintf_puts(buf);
           break;
         case 'u': // unsigned int
           tmp = va_arg(args, int);
-          tmp = (i < 0 ? -i : i); // basic abs() implementation
+          tmp = abs(tmp);
           itoa(tmp, buf, 10);
           _vkprintf_puts(buf);
           break;
@@ -122,23 +117,23 @@ size_t vkprintf(const char * format, va_list args) {
           itoa(tmp, buf, 8);
           _vkprintf_puts(buf);
           break;
-        case 'd':
+        case 'd': // decimal
           tmp = va_arg(args, int);
           itoa(tmp, buf, 10);
           _vkprintf_puts(buf);
           break;
-        case 'c':
+        case 'c': // char
           tmp = va_arg(args, int);
           _vkprintf_putc(tmp);
           break;
-        case 's':
-          tmp2 = va_arg(args, char *);
-          _vkprintf_puts(tmp2);
+        case 's': // string
+          tmp2 = va_arg(args, void *);
+          _vkprintf_puts((char *)tmp2);
           break;
-        case '%':
+        case '%': // just a goo'old %
           _vkprintf_putc('%');
           break;
-        default:
+        default: // something we haven't implemented yet :P
           _vkprintf_putc(format[i]);
           break;
       }
