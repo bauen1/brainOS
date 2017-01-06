@@ -159,10 +159,14 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     multiboot_module_t * mod_info;
     for (uint32_t i = 0; i < mbi->mods_count; i++) {
       mod_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
-      kprintf("_end:  0x%x\nmod_end:   0x%x\n", _end, mod_info->mod_end);
       if (_end < mod_info->mod_end) {
-        kprintf("true!\n");
+
         _end = mod_info->mod_end;
+      } else {
+        // if the above statement isn't true then the module is either loaded inside our kernel
+        // or below it
+        // in either case its no good, so warn the user that the kernel could crash
+        kprintf("WARNING: module loaded below or inside our kernel!\n");
       }
     }
   }
@@ -170,7 +174,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   if (mbi->mods_count > 0) {
     multiboot_module_t * module_info;
     kprintf("Trying to load %d module(s)\n", mbi->mods_count);
-    kprintf("mbi->mods_addr: 0x%x\n", mbi->mods_addr);
 
     for (uint32_t i = 0; i < mbi->mods_count; i++) {
       module_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
@@ -197,19 +200,15 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // Parse the memory map supplied to us by grub
   multiboot_memory_map_t * mmap;
-  int region = 0;
-  for (mmap = (multiboot_memory_map_t *) mbi->mmap_addr;
-       (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
-       mmap = (multiboot_memory_map_t *) ((unsigned long) mmap
-                                + mmap->size + sizeof (mmap->size))) {
+  for (mmap = (multiboot_memory_map_t *)mbi->mmap_addr;
+    (((uint32_t) mmap) < (mbi->mmap_addr + mbi->mmap_length));
+    mmap = (multiboot_memory_map_t *) ((uint32_t)(mmap + mmap->size + sizeof(mmap->size))) ){
 
-    if (mmap->type == 1) {
+    if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
       pmm_free_region(mmap->addr, mmap->len);
     } else {
       pmm_alloc_region(mmap->addr, mmap->len);
     }
-
-    region++;
   }
 
   // memory below 1 mb is for special purpose (virtual 8086 mode)
@@ -224,7 +223,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // Initialise Paging (this just identity maps 4GBs atm)
   vmm_init();
 
-  interrupts_disable();
+  interrupts_enable();
 
   //rtl8139_init();
 
