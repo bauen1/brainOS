@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "cpu.h"
 
 uint8_t inportb (uint16_t port) {
@@ -28,4 +29,11 @@ uint32_t inportl (uint16_t port) {
 
 void outportl (uint16_t port, uint32_t data) {
   __asm__ __volatile__ ("outl %1, %0" : : "dN" (port), "a" (data));
+}
+
+__attribute__((noreturn)) inline void halt() {
+  interrupts_disable();
+  while (true) {
+    __asm__ __volatile__ ("hlt");
+  }
 }

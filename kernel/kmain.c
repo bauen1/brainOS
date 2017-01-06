@@ -17,59 +17,7 @@
 #include "pmm.h"
 #include "vmm.h"
 #include "rtl8139.h"
-
-typedef struct elf_header {
-  uint32_t magic;
-  uint8_t bitsize;
-  uint8_t endian;
-  uint8_t elf_version0;
-  uint8_t os_abi;
-  uint64_t unused;
-  uint16_t type;
-  uint16_t instruction_set;
-  uint32_t elf_version1;
-  uint32_t entry_addr;
-  uint32_t programm_header_position;
-  uint32_t section_header_position;
-  uint32_t flags;
-  uint16_t header_size;
-  uint16_t programm_header_entry_size;
-  uint16_t programm_header_entry_count;
-  uint16_t section_header_entry_size;
-  uint16_t section_header_entry_count;
-  uint16_t e_shstrndx;
-} __attribute__((packed)) elf_header_t;
-
-typedef struct elf_programm_header_entry {
-  uint32_t type;
-  uint32_t p_offset;
-  uint32_t p_vaddr;
-  uint32_t undefined;
-  uint32_t p_filesz;
-  uint32_t p_memsz;
-  uint32_t flags;
-  uint32_t alignment;
-} __attribute__((packed)) elf_programm_header_entry_t;
-
-typedef struct elf_section_header_entry {
-  uint32_t name;
-  uint32_t type;
-  uint32_t flags;
-  uint32_t addr;
-  uint32_t offset;
-  uint32_t size;
-  uint32_t link;
-  uint32_t info;
-  uint32_t addralign;
-  uint32_t entsize;
-} __attribute__((packed)) elf_section_header_entry_t;
-
-__attribute__((noreturn)) static inline void halt() {
-  __asm__ __volatile__ ("cli");
-  for(;;){
-    __asm__ __volatile__ ("hlt");
-  }
-}
+#include "elf.h"
 
 void __abort(const char * function, const char * filename, int line) {
   kprintf("Assertion failed in function %s in file %s at line %d!\n", function, filename, line);
@@ -205,11 +153,24 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // setup the pci bus (FIXME: there isn't much to initialise right ?)
   pci_install();
 
-  kprintf("Loading modules:\nmbi->mods_addr: 0x%x\n", mbi->mods_addr);
+  uint32_t _end = (uint32_t)&end;
+
+  if (mbi->mods_count > 0) {
+    multiboot_module_t * mod_info;
+    for (uint32_t i = 0; i < mbi->mods_count; i++) {
+      mod_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
+      kprintf("_end:  0x%x\nmod_end:   0x%x\n", _end, mod_info->mod_end);
+      if (_end < mod_info->mod_end) {
+        kprintf("true!\n");
+        _end = mod_info->mod_end;
+      }
+    }
+  }
 
   if (mbi->mods_count > 0) {
     multiboot_module_t * module_info;
-    kprintf("Trying to load %d modules\n", mbi->mods_count);
+    kprintf("Trying to load %d module(s)\n", mbi->mods_count);
+    kprintf("mbi->mods_addr: 0x%x\n", mbi->mods_addr);
 
     for (uint32_t i = 0; i < mbi->mods_count; i++) {
       module_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
@@ -220,74 +181,22 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
         module_info->mod_start,
         module_info->mod_end,
         (char *)module_info->cmdline);
-      elf_header_t * elf_header = (elf_header_t *)module_info->mod_start;
-      if (elf_header->magic == 0x464c457f) {
-        kprintf("found a elf module!\n");
-        kprintf("entry point: 0x%x\n", elf_header->entry_addr);
-        if (elf_header->bitsize == 1) {
-          //kprintf("programm_header_position: 0x%x\n", elf_header->programm_header_position);
-
-          /*
-          uint32_t programm_header_position = elf_header->programm_header_position + module_info->mod_start;
-          elf_programm_header_entry_t * programm_header_entry;
-          for (uint32_t j = 0; j < elf_header->programm_header_entry_count; j++) {
-            programm_header_entry = (elf_programm_header_entry_t *)(programm_header_position + j * sizeof(elf_programm_header_entry_t));
-            kprintf("programm_header_entry:\n"
-              "type:        %d\n"
-              "p_offset:    0x%x\n"
-              "p_vaddr:     0x%x\n"
-              "p_filesz:    0x%x\n"
-              "p_memsez:    0x%x\n"
-              "flags:       0x%x\n"
-              "alignment:   0x%x\n",
-              programm_header_entry->type,
-              programm_header_entry->p_offset,
-              programm_header_entry->p_vaddr,
-              programm_header_entry->p_filesz,
-              programm_header_entry->p_memsz,
-              programm_header_entry->flags,
-              programm_header_entry->alignment
-            );
-          }
-          */
-
-          uint32_t section_header_position = elf_header->section_header_position + module_info->mod_start;
-          elf_section_header_entry_t * section_header_entry;
-          for (uint32_t j = 0; j < elf_header->section_header_entry_count; j++) {
-            section_header_entry = (elf_section_header_entry_t *)(section_header_position + j * sizeof(elf_section_header_entry_t));
-            kprintf("section_header_entry:\n"
-              "type:          %d\n"
-              "flags:         0x%x\n"
-              "addr:          0x%x\n"
-              "offset:        0x%x\n"
-              "size:          0x%x\n"
-              "link:          0x%x\n"
-              "info:          0x%x\n"
-              "addralign:     0x%x\n"
-              "entsize:       0x%x\n",
-              section_header_entry->type,
-              section_header_entry->flags,
-              section_header_entry->addr,
-              section_header_entry->offset,
-              section_header_entry->size,
-              section_header_entry->link,
-              section_header_entry->info,
-              section_header_entry->addralign,
-              section_header_entry->entsize
-            );
-          }
-        }
+      Elf32_Ehdr_t * elf_header = (Elf32_Ehdr_t *)module_info->mod_start;
+      if ((elf_header->e_ident[0] == 0x7f) && (elf_header->e_ident[1] == 'E') && (elf_header->e_ident[2] == 'L') && (elf_header->e_ident[3] == 'F')) {
+        kprintf("Found a valid elf module!\n");
       }
-      end = module_info->mod_end; //
     }
   } else {
     kprintf("No modules loaded!\n");
   }
 
-  pmm_init(mbi->mem_upper * 1024, (uint32_t)&end);
+  // Round up to full blocks
+  _end = _end + 4096 - (_end % 4096);
+
+  pmm_init(mbi->mem_upper * 1024, _end);
 
   // Parse the memory map supplied to us by grub
-  multiboot_memory_map_t *mmap;
+  multiboot_memory_map_t * mmap;
   int region = 0;
   for (mmap = (multiboot_memory_map_t *) mbi->mmap_addr;
        (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
@@ -315,28 +224,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // Initialise Paging (this just identity maps 4GBs atm)
   vmm_init();
 
-  // Physical Memory Manager Test:
-  // pmm_used_blocks should be the same on both prints
-  /*
-  puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
-
-  void * p = pmm_alloc_block();
-  puthex("p:   ", (uint32_t)p);
-  void * p2 = pmm_alloc_blocks(2);
-  puthex("p2:  ", (uint32_t)p2);
-  void * p3 = pmm_alloc_block();
-  puthex("p3:  ", (uint32_t)p2);
-  pmm_free_block(p3);
-  puts("reallocating p\n");
-  pmm_free_block(p);
-  p = pmm_alloc_block();
-  puthex("p3:  ", (uint32_t)p);
-  pmm_free_block(p);
-  pmm_free_blocks(p2, 2);
-  puthex("pmm_used_blocks: ", pmm_get_pmm_used_blocks());
-  */
-
-  __asm__ __volatile__("sti");  // enable interrupts
+  interrupts_disable();
 
   //rtl8139_init();
 
