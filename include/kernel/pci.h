@@ -9,8 +9,6 @@
 
 void pci_list();
 
-void pci_install();
-
 typedef void (* pci_scan_callback_t)(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint16_t device_id, void * driver_data);
 
 void pci_scan(pci_scan_callback_t callback, void * driver_data);

@@ -1,6 +1,5 @@
 #include "tty.h"
 #include "system.h"
-#include "vga.h"
 #include "basic_font.h"
 
 static void memsetw(uint16_t * destination, uint16_t v, size_t num) {
@@ -11,7 +10,6 @@ static void memsetw(uint16_t * destination, uint16_t v, size_t num) {
 }
 
 uint8_t * video_memory;
-uint8_t attribute = get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 
 uint8_t x, y;
 
@@ -38,7 +36,7 @@ static inline void put_rect_fill(uint32_t x, uint32_t y, uint8_t r, uint8_t g, u
   }
 }
 
-static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
+static void put_v_at(unsigned char c, uint8_t x, uint8_t y) {
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
       if (font8x8_basic[c][i] & (1 << j)) {
@@ -48,16 +46,16 @@ static void put_v_at(unsigned char c, uint8_t attribute, uint8_t x, uint8_t y) {
   }
 }
 
-void tty_init(struct multiboot_info * mbi) {
-  video_memory = (uint8_t *)(uint32_t)mbi->framebuffer_addr;
+void tty_init(uintptr_t framebuffer_addr, uint8_t framebuffer_bpp, uint32_t framebuffer_width, uint32_t framebuffer_height, uint32_t framebuffer_pitch, uint8_t framebuffer_type) {
+  video_memory = (uint8_t *)framebuffer_addr;
   x = 0;
   y = 0;
-  bytes_per_pixel = mbi->framebuffer_bpp / 8;
-  width = mbi->framebuffer_width;
+  bytes_per_pixel = framebuffer_bpp / 8;
+  width = framebuffer_width;
   char_width = width / 8;
-  height = mbi->framebuffer_height;
+  height = framebuffer_height;
   char_height = height / 8;
-  pitch = mbi->framebuffer_pitch;
+  pitch = framebuffer_pitch;
   tty_clear();
   kprintf("framebuffer:\n"
     "addr:    0x%x\n"
@@ -66,12 +64,12 @@ void tty_init(struct multiboot_info * mbi) {
     "height:  0x%x\n"
     "bpp:     0x%x\n"
     "type:    %d\n",
-    mbi->framebuffer_addr,
-    mbi->framebuffer_pitch,
-    mbi->framebuffer_width,
-    mbi->framebuffer_height,
-    mbi->framebuffer_bpp,
-    (mbi->framebuffer_type & 0xFF)
+    framebuffer_addr,
+    framebuffer_pitch,
+    framebuffer_width,
+    framebuffer_height,
+    framebuffer_bpp,
+    (framebuffer_type & 0xFF)
   );
 }
 
@@ -109,7 +107,7 @@ inline void tty_putc(char c) {
       x = 0;
       y++;
     }
-    put_v_at(c, attribute, x, y);
+    put_v_at(c, x, y);
     x++;
   }
 
@@ -130,12 +128,4 @@ inline void tty_set_cursor_x(uint8_t _x) {
 
 inline void tty_set_cursor_y(uint8_t _y) {
   y = _y;
-}
-
-inline void tty_set_attribute(uint8_t v) {
-  attribute = v;
-}
-
-inline uint8_t tty_get_attribute() {
-  return attribute;
 }

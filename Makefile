@@ -108,4 +108,4 @@ kernel/arch/$(arch)/%.o: kernel/arch/$(arch)/%.s | kernel/arch/$(arch)/*.s # Thi
 	$(nasm) $(nasmflags) -felf $< -o $@
 
 modules/%.elf: modules/linker.ld modules/%.c | include/kernel/*.h
-	time $(cc) $(cflags) $(modules_cflags) -I./include/kernel -nostdlib -o $@ -T $^
+	time $(cc) $(cflags) $(modules_cflags) -I./include/kernel -nostdlib -o $@ -r -T $^

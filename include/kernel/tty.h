@@ -2,14 +2,11 @@
 #define TTY_H
 
 #include "system.h"
-#include "multiboot.h"
 
-void tty_init(struct multiboot_info * mbi);
+void tty_init(uintptr_t framebuffer_addr, uint8_t framebuffer_bpp, uint32_t framebuffer_width, uint32_t framebuffer_height, uint32_t framebuffer_pitch, uint8_t framebuffer_type);
 void tty_clear();
 void tty_putc(char c);
 
-void tty_set_attribute(uint8_t v);
-uint8_t tty_get_attribute();
 uint8_t tty_get_cursor_x();
 uint8_t tty_get_cursor_y();
 void tty_set_cursor_x(uint8_t _x);

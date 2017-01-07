@@ -130,5 +130,3 @@ static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint1
 void pci_list() {
   pci_scan((pci_scan_callback_t)pci_printDevice, NULL);
 }
-
-void pci_install() {}

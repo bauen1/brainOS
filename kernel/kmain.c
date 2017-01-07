@@ -60,7 +60,7 @@ const char * exception[32] = {
 };
 
 __attribute__((noreturn)) void kpanic (struct registers * registers) {
-  tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
+  //tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
   tty_clear();
   puts("KERNEL PANIC:\n");
   if (registers->isr_num < 32) {
@@ -115,6 +115,14 @@ __attribute__((noreturn)) void __stack_chk_fail() {
   halt();
 }
 
+static int elf_load_stage1(Elf32_Ehdr_t * header) {
+
+  return 0;
+}
+static void * elf_load_rel(Elf32_Ehdr_t * header) {
+  int result = elf_load_stage1(header);
+  return (void *)header->e_entry;
+}
 extern uint32_t end;
 extern uint32_t start;
 
@@ -131,14 +139,14 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   }
 
   // Initialise standard output
-  tty_init(mbi);
+  tty_init((uintptr_t)mbi->framebuffer_addr, mbi->framebuffer_bpp, mbi->framebuffer_width, mbi->framebuffer_height, mbi->framebuffer_pitch, mbi->framebuffer_type);
 
   // Print our logo
-  tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
+  //tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   kprintf("+------------------------------------------------------------------------------+\n"
           "| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n"
           "+------------------------------------------------------------------------------+\n");
-  tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+  //tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
 
   // calculate available memory
   kprintf("calculated memory (from mboot->mem_upper + mboot->mem_lower):    %dkb\n", mbi->mem_upper + mbi->mem_lower);
@@ -149,9 +157,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // setup the clock to fire every second (1hz)
   time_init(1);
-
-  // setup the pci bus (FIXME: there isn't much to initialise right ?)
-  pci_install();
 
   uint32_t _end = (uint32_t)&end;
 
@@ -223,6 +228,32 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   // Initialise Paging (this just identity maps 4GBs atm)
   vmm_init();
 
+  if (mbi->mods_count > 0) {
+    multiboot_module_t * module_info;
+    kprintf("Trying to load %d module(s)\n", mbi->mods_count);
+
+    for (uint32_t i = 0; i < mbi->mods_count; i++) {
+      module_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
+      kprintf("module info:\n"
+          "mod_start:   0x%x\n"
+          "mod_end:     0x%x\n"
+          "commandline: '%s'\n",
+        module_info->mod_start,
+        module_info->mod_end,
+        (char *)module_info->cmdline);
+      Elf32_Ehdr_t * elf_header = (Elf32_Ehdr_t *)module_info->mod_start;
+      if (elf_check_magic(elf_header)) {
+        kprintf("Found a valid elf module!\n");
+        // TODO: we are skipping endian etc checks!
+        kprintf("%d test\n", elf_header->e_type);
+        kprintf("0x%x\n", elf_load_rel(elf_header));
+      }
+    }
+  } else {
+    kprintf("No modules loaded!\n");
+  }
+
+  // enable interrupts
   interrupts_enable();
 
   //rtl8139_init();

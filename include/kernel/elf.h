@@ -64,4 +64,6 @@ typedef struct {
   Elf32_Sword_t r_addend;
 } __attribute__((packed)) Elf32_Rela_t;
 
+#define elf_check_magic(elf_header) (elf_header->e_ident[0] == 0x7f) && (elf_header->e_ident[1] == 'E') && (elf_header->e_ident[2] == 'L') && (elf_header->e_ident[3] == 'F')
+
 #endif
