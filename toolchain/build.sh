@@ -18,29 +18,6 @@ function get() {
 
 # Someone please help me with signature checking xD
 
-#mkdir -p "$PWD/build/automake"
-#pushd .
-#  cd "$PWD/build/automake"
-#  get "automake-1.11.1" "http://ftp.gnu.org/gnu/automake" "automake-1.11.1.tar.bz2" || exit 1
-#  tar -xf "automake-1.11.1.tar.bz2" || exit 2
-#  ./automake-1.11.1/configure --prefix="$PREFIX" || exit 3
-#  make || exit 4
-#  make install || exit 5
-#popd
-
-#mkdir -p "$PWD/build/autoconf"
-#pushd .
-#  cd "$PWD/build/autoconf"
-#  get "autoconf-2.64" "http://ftp.gnu.org/gnu/autoconf" "autoconf-2.64.tar.bz2" || exit 1
-#  tar -xf "autoconf-1.11.1.tar.bz2" || exit 2
-#  ./autoconf-2.64/configure --prefix="$PREFIX" || exit 3
-#  make || exit 4
-#  make install || exit 5
-#popd
-
-#export PATH_OLD=$PATH
-#export PATH="$HOME/opt/cross/bin:$PATH"
-
 if [ -e "$PREFIX/bin/$TARGET-objcopy" ]
 then
   echo "skipping binutils"
@@ -56,7 +33,6 @@ else
     make || exit 4
     make install || exit 5
   popd
-
 fi
 
 if [ -e "$PREFIX/bin/$TARGET-gcc" ]
@@ -78,24 +54,22 @@ else
   popd
 fi
 
-#mkdir -p "$PWD/build/flex/"
-#pushd .
-#  cd "$PWD/build/flex"
-#  get "flex2.6.2" "https://github.com/westes/flex/releases/download/v2.6.2" "flex-2.6.2.tar.gz" || exit 1
-#  tar -xf "flex-2.6.2.tar.gz" || exit 2
-#  ./flex-2.6.2/configure --prefix=$PREFIX # Hey this shouldn't be installed there but i don't care \o/
-#  make || exit 4
-#  make install || exit 5
-#popd .
-
 #mkdir -p "$PWD/build/grub2/"
 #pushd .
 #  cd "$PWD/build/grub2/"
 #  get "grub2.00" "ftp://ftp.gnu.org/gnu/grub" "grub-2.00.tar.xz" || exit 1
 #  tar -xf "grub-2.00.tar.xz" || exit 2
-#  ./grub-2.00/configure --disable-werror TARGET_CC="$PREFIX/bin/$TARGET-gcc" TARGET_OBJCOPY="$PREFIX/bin/$TARGET-objcopy" TARGET_STRIP="$PREFIX/bin/$TARGET-strip" TARGET_NM="$PREFIX/bin/$TARGET-nm" --target=$TARGET --prefix=$PREFIX || exit 3
-#  make || exit 4
-#  make install || exit 5
+#  pushd .
+#    cd grub-2.00
+#    ./autogen.sh | exit 3
+#  popd
+#  mkdir grub
+#  pushd .
+#    cd grub
+#    ../grub-2.00/configure --disable-werror TARGET_CC=$TARGET-gcc TARGET_OBJCOPY=$TARGET-objcopy TARGET_STRIP=$TARGET-strip TARGET_NM=$TARGET-nm --target=$TARGET --prefix=$PREFIX || exit 4
+#    make || exit 4
+#    make install || exit 5
+#  popd
 #popd
 
 echo "Skipping grub2 install please provide your own grub-mkrescue for the moment"

@@ -16,7 +16,7 @@
 #include "pmm.h"
 #include "vmm.h"
 #include "rtl8139.h"
-#include "elf.h"
+#include "elf_loader.h"
 
 void __abort(const char * function, const char * filename, int line) {
   kprintf("Assertion failed in function %s in file %s at line %d!\n", function, filename, line);
@@ -114,14 +114,6 @@ __attribute__((noreturn)) void __stack_chk_fail() {
   halt();
 }
 
-static int elf_load_stage1(Elf32_Ehdr_t * header) {
-
-  return 0;
-}
-static void * elf_load_rel(Elf32_Ehdr_t * header) {
-  int result = elf_load_stage1(header);
-  return (void *)header->e_entry;
-}
 extern uint32_t end;
 extern uint32_t start;
 
@@ -142,11 +134,10 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
 
   // Print our logo
   tty_set_foreground_color((struct color){.r=0x00, .g=0x7E, .b=0xA7});
-  //tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
-  kprintf("+------------------------------------------------------------------------------+\n"
-          "| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n"
-          "+------------------------------------------------------------------------------+\n");
-  //tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+  kprintf("\n"
+          "________________________________________________________________________________\n\n"
+          "                     brainOS - v0.1 MIT Licence 2016 bauen1                     \n"
+          "________________________________________________________________________________\n\n");
   tty_set_foreground_color((struct color){.r=0x00, .g=0x00, .b=0x00});
 
 
@@ -221,13 +212,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
         module_info->mod_start,
         module_info->mod_end,
         (char *)module_info->cmdline);
-      Elf32_Ehdr_t * elf_header = (Elf32_Ehdr_t *)module_info->mod_start;
-      if (elf_check_magic(elf_header)) {
-        kprintf("Found a valid elf module!\n");
-        // TODO: we are skipping endian etc checks!
-        kprintf("%d test\n", elf_header->e_type);
-        kprintf("0x%x\n", elf_load_rel(elf_header));
-      }
+      elf_load((void *)module_info->mod_start);
     }
   } else {
     kprintf("No modules loaded!\n");
