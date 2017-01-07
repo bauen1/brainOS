@@ -6,7 +6,6 @@
 
 #include "multiboot.h"
 #include "system.h"
-#include "vga.h"
 #include "tty.h"
 #include "idt.h"
 #include "time.h"
@@ -142,11 +141,14 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   tty_init((uintptr_t)mbi->framebuffer_addr, mbi->framebuffer_bpp, mbi->framebuffer_width, mbi->framebuffer_height, mbi->framebuffer_pitch, mbi->framebuffer_type);
 
   // Print our logo
+  tty_set_foreground_color((struct color){.r=0x00, .g=0x7E, .b=0xA7});
   //tty_set_attribute(get_attribute(VGA_COLOR_WHITE, VGA_COLOR_CYAN));
   kprintf("+------------------------------------------------------------------------------+\n"
           "| brainOS v0.1 MIT Licence 2016 bauen1                                         |\n"
           "+------------------------------------------------------------------------------+\n");
   //tty_set_attribute(get_attribute(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+  tty_set_foreground_color((struct color){.r=0x00, .g=0x00, .b=0x00});
+
 
   // calculate available memory
   kprintf("calculated memory (from mboot->mem_upper + mboot->mem_lower):    %dkb\n", mbi->mem_upper + mbi->mem_lower);
@@ -174,28 +176,6 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
         kprintf("WARNING: module loaded below or inside our kernel!\n");
       }
     }
-  }
-
-  if (mbi->mods_count > 0) {
-    multiboot_module_t * module_info;
-    kprintf("Trying to load %d module(s)\n", mbi->mods_count);
-
-    for (uint32_t i = 0; i < mbi->mods_count; i++) {
-      module_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
-      kprintf("module info:\n"
-          "mod_start:   0x%x\n"
-          "mod_end:     0x%x\n"
-          "commandline: '%s'\n",
-        module_info->mod_start,
-        module_info->mod_end,
-        (char *)module_info->cmdline);
-      Elf32_Ehdr_t * elf_header = (Elf32_Ehdr_t *)module_info->mod_start;
-      if ((elf_header->e_ident[0] == 0x7f) && (elf_header->e_ident[1] == 'E') && (elf_header->e_ident[2] == 'L') && (elf_header->e_ident[3] == 'F')) {
-        kprintf("Found a valid elf module!\n");
-      }
-    }
-  } else {
-    kprintf("No modules loaded!\n");
   }
 
   // Round up to full blocks

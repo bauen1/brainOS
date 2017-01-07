@@ -1,7 +1,6 @@
 #include "pci.h"
 #include "system.h"
 #include "tty.h"
-#include "vga.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -88,12 +87,13 @@ static void pci_printDevice(uint8_t bus, uint8_t slot, uint16_t vendor_id, uint1
     name = "Reserved class";
   }
 
+  // TODO: rework the below lines
   size_t name_len = strlen(name);
   puts((char *)name);
   puts(" (0x");
   _puthex_8(classcode);
   puts(") -");
-  for (size_t i = 0; i < (VGA_WIDTH - name_len - 11); i++) {
+  for (size_t i = 0; i < (80 - name_len - 11); i++) {
     putc('-');
   }
   puts("\n");
