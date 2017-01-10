@@ -1,3 +1,21 @@
+// kmain.c kernel entry point
+//
+// Copyright (C) 2016,2017  bauen1
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 #include <stdbool.h>
 #include <assert.h>
 
@@ -136,7 +154,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
   tty_set_foreground_color((struct color){.r=0x00, .g=0x7E, .b=0xA7});
   kprintf("\n"
           "________________________________________________________________________________\n\n"
-          "                     brainOS - v0.1 MIT Licence 2016 bauen1                     \n"
+          "                 brainOS - v0.1 GNU GPL Licence v3.0 2016 bauen1                \n"
           "________________________________________________________________________________\n\n");
   tty_set_foreground_color((struct color){.r=0x00, .g=0x00, .b=0x00});
 
