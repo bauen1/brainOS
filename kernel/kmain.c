@@ -175,6 +175,7 @@ int kmain (multiboot_info_t * mbi, uint32_t stack_size, uintptr_t esp) {
     multiboot_module_t * mod_info;
     for (uint32_t i = 0; i < mbi->mods_count; i++) {
       mod_info = (multiboot_module_t *)(mbi->mods_addr + 0x10 * i);
+      kprintf("mod_start: 0x%x\nmod_end: 0x%x\n", mod_info->mod_start, mod_info->mod_end);
       if (_end < mod_info->mod_end) {
 
         _end = mod_info->mod_end;
